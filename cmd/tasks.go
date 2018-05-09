@@ -24,26 +24,23 @@ import (
 	"fmt"
 
 	"github.com/8Mobius8/go-habits/api"
-
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(isupCmd)
-}
-
-var isupCmd = &cobra.Command{
-	Use:   "isup",
-	Short: "Check if Habitica api is reachable.",
+var tasksCmd = &cobra.Command{
+	Use:   "tasks",
+	Short: "List your undone tasks",
+	Long:  `List your undone tasks`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(GetHabiticaStatus())
+		res := api.GetHabiticaAPITasks()
+
+		taskResponse := api.ParseTaskResponse(res)
+
+		fmt.Println(api.GetTasks(taskResponse))
 	},
 }
 
-func GetHabiticaStatus() string {
-	resp := api.GetHabiticaAPIStatus()
+func init() {
+	rootCmd.AddCommand(tasksCmd)
 
-	HabiticaStatusResp := api.ParseResponse(resp)
-
-	return api.HabiticaStatusMessage(HabiticaStatusResp)
 }
