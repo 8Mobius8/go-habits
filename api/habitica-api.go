@@ -10,7 +10,7 @@ import (
 // HabiticaAPI Main client for interacting with Habitica API via HTTP
 type HabiticaAPI struct {
 	client  *http.Client
-	hostUrl string
+	hostURL string
 }
 
 func NewHabiticaApi(client *http.Client, hosturl string) *HabiticaAPI {
@@ -21,9 +21,9 @@ func NewHabiticaApi(client *http.Client, hosturl string) *HabiticaAPI {
 	}
 
 	if hosturl == "" {
-		api.hostUrl = "https://habitica.com/api"
+		api.hostURL = "https://habitica.com/api"
 	} else {
-		api.hostUrl = hosturl
+		api.hostURL = hosturl
 	}
 
 	return &api
@@ -38,25 +38,25 @@ func (api *HabiticaAPI) Tasks() (*http.Response, error) {
 }
 
 func (api *HabiticaAPI) get(route string) (*http.Response, error) {
-	res, err := api.client.Get(api.hostUrl + "/v3" + route)
+	res, err := api.client.Get(api.hostURL + "/v3" + route)
 
 	if err != nil {
 		return nil, err
 	}
 
 	if res.StatusCode >= 400 {
-		return nil, &ApiError{http.StatusText(res.StatusCode), res.StatusCode}
+		return nil, &Error{http.StatusText(res.StatusCode), res.StatusCode}
 	}
 
 	return res, nil
 }
 
-type ApiError struct {
+type Error struct {
 	msg  string
 	code int
 }
 
-func (err *ApiError) Error() string {
+func (err *Error) Error() string {
 	return err.msg
 }
 
