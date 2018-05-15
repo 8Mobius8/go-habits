@@ -23,7 +23,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/8Mobius8/go-habits/api"
+	HabitApi "github.com/8Mobius8/go-habits/api"
 
 	"github.com/spf13/cobra"
 )
@@ -36,14 +36,16 @@ var isupCmd = &cobra.Command{
 	Use:   "isup",
 	Short: "Check if Habitica api is reachable.",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(GetHabiticaStatus())
+		api := HabitApi.NewHabiticaApi(nil, "https://habitica.com/api")
+
+		res, err := api.Status()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		var HabiticaStatusResp HabitApi.StatusResponse
+		api.ParseResponse(res, &HabiticaStatusResp)
+
+		fmt.Println(HabitApi.HabiticaStatusMessage(HabiticaStatusResp))
 	},
-}
-
-func GetHabiticaStatus() string {
-	resp := api.GetHabiticaAPIStatus()
-
-	HabiticaStatusResp := api.ParseResponse(resp)
-
-	return api.HabiticaStatusMessage(HabiticaStatusResp)
 }

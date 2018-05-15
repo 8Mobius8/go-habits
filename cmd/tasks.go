@@ -23,7 +23,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/8Mobius8/go-habits/api"
+	HabitApi "github.com/8Mobius8/go-habits/api"
 	"github.com/spf13/cobra"
 )
 
@@ -32,11 +32,17 @@ var tasksCmd = &cobra.Command{
 	Short: "List your undone tasks",
 	Long:  `List your undone tasks`,
 	Run: func(cmd *cobra.Command, args []string) {
-		res := api.GetHabiticaAPITasks()
+		api := HabitApi.NewHabiticaApi(nil, "https://habitica.com")
 
-		taskResponse := api.ParseTaskResponse(res)
+		res, err := api.Tasks()
+		if err != nil {
+			fmt.Println(err)
+		}
 
-		fmt.Println(api.GetTasks(taskResponse))
+		var taskResponse HabitApi.TasksResponse
+		api.ParseResponse(res, &taskResponse)
+
+		fmt.Println(HabitApi.GetTasks(taskResponse))
 	},
 }
 
