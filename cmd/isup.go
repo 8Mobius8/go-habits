@@ -44,9 +44,14 @@ var isupCmd = &cobra.Command{
 			fmt.Println(err)
 		}
 
-		var HabiticaStatusResp status.StatusResponse
-		api.ParseResponse(res, &HabiticaStatusResp)
-
-		fmt.Println(status.HabiticaStatusMessage(HabiticaStatusResp))
+		fmt.Println(IsUpMessage(res))
 	},
+}
+
+func IsUpMessage(resp status.StatusResponse) string {
+	if resp.Data.Status != "up" {
+		return ":( Habitica is unreachable."
+	}
+
+	return "Habitica is reachable, GO catch all those pets!"
 }
