@@ -1,10 +1,10 @@
-package api_test
+package tasks_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/8Mobius8/go-habits/api"
+	. "github.com/8Mobius8/go-habits/api/tasks"
 )
 
 var _ = Describe("'go-habits tasks'", func() {

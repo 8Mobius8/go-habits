@@ -10,41 +10,81 @@ import (
 	. "github.com/8Mobius8/go-habits/api"
 )
 
-var _ = Describe("habitica api router", func() {
-	var (
-		server   *ghttp.Server
-		habitapi *HabiticaAPI
-	)
+var _ = Describe("Habitica API Router", func() {
 
-	BeforeEach(func() {
-		server = ghttp.NewServer()
-		habitapi = NewHabiticaApi(nil, server.URL())
-	})
+	Context("when making regular requests", func() {
 
-	AfterEach(func() {
-		server.Close()
-	})
+		var (
+			server   *ghttp.Server
+			habitapi *HabiticaAPI
+		)
 
-	Describe("when receving errors from api", func() {
-		errorStatuses := []int{
-			http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden, http.StatusNotFound,
-			http.StatusInternalServerError, http.StatusServiceUnavailable,
-		}
-		for _, errorStatus := range errorStatuses {
+		BeforeEach(func() {
+			server = ghttp.NewServer()
+			habitapi = NewHabiticaAPI(nil, server.URL())
+		})
 
-			It("will respond with "+http.StatusText(errorStatus)+" error when habitica error when api called failed", func() {
+		AfterEach(func() {
+			server.Close()
+		})
+
+		Describe("when recieving okay status from api", func() {
+			It("returns with byte[] array of response from route", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/v3/status"),
-						ghttp.RespondWith(errorStatus, http.StatusText(errorStatus)),
+						ghttp.VerifyRequest("GET", "/v3"),
+						ghttp.RespondWith(200, `somebytes`),
 					),
 				)
 
-				_, err := habitapi.Status()
-
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal(http.StatusText(errorStatus)))
+				res, err := habitapi.Get("")
+				Expect(err).ToNot(HaveOccurred())
+				Expect(res).To(Equal([]byte(`somebytes`)))
 			})
-		}
+		})
+
+		Describe("when recieving errors from api", func() {
+			errorStatuses := []int{
+				http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden, http.StatusNotFound,
+				http.StatusInternalServerError, http.StatusServiceUnavailable,
+			}
+			for _, errorStatus := range errorStatuses {
+
+				It("will respond with "+http.StatusText(errorStatus)+" error when habitica error when api called failed", func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/v3/status"),
+							ghttp.RespondWith(errorStatus, http.StatusText(errorStatus)),
+						),
+					)
+
+					_, err := habitapi.Status()
+
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal(http.StatusText(errorStatus)))
+				})
+			}
+		})
+	})
+
+	Describe("when parsing a http response", func() {
+		var habitapi *HabiticaAPI
+
+		BeforeEach(func() {
+			habitapi = NewHabiticaAPI(nil, "")
+		})
+
+		It("Will return an struct with fields filled in", func() {
+			var aDataModel struct {
+				PropertyA string
+				PropertyB int
+			}
+			var stringDataModel = []byte(`{"PropertyA":"A","PropertyB":10}`)
+
+			habitapi.ParseResponse(stringDataModel, &aDataModel)
+
+			Expect(aDataModel.PropertyA).To(Equal("A"))
+			Expect(aDataModel.PropertyB).To(Equal(10))
+		})
 	})
 })

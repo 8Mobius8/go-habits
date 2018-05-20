@@ -1,4 +1,4 @@
-package api
+package tasks
 
 type TasksResponse struct {
 	Success bool

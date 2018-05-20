@@ -1,4 +1,4 @@
-package api
+package status
 
 type StatusResponse struct {
 	Success bool

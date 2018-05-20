@@ -13,7 +13,9 @@ type HabiticaAPI struct {
 	hostURL string
 }
 
-func NewHabiticaApi(client *http.Client, hosturl string) *HabiticaAPI {
+// NewHabiticaAPI is a function for creating a new client api. Can pass in prexisting client
+// for proxies or what not.
+func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
 	var api HabiticaAPI
 
 	if client == nil {
@@ -21,7 +23,7 @@ func NewHabiticaApi(client *http.Client, hosturl string) *HabiticaAPI {
 	}
 
 	if hosturl == "" {
-		api.hostURL = "https://habitica.com/api"
+		api.hostURL = `https://habitica.com/api`
 	} else {
 		api.hostURL = hosturl
 	}
@@ -29,49 +31,55 @@ func NewHabiticaApi(client *http.Client, hosturl string) *HabiticaAPI {
 	return &api
 }
 
-func (api *HabiticaAPI) Status() (*http.Response, error) {
-	return api.get("/status")
+// Status will return response from `/status` route of Habitica Api.
+// It will also return errors in either HTTP Protocol or if status
+// code is equal to or above 400.
+func (api *HabiticaAPI) Status() ([]byte, error) {
+	return api.Get("/status")
 }
 
-func (api *HabiticaAPI) Tasks() (*http.Response, error) {
-	return api.get("/user")
+// Tasks will return response from `/task` route of Habitica Api.
+// It will also return errors in either HTTP Protocol or if status
+// code is equal to or above 400.
+func (api *HabiticaAPI) Tasks() ([]byte, error) {
+	return api.Get("/user")
 }
 
-func (api *HabiticaAPI) get(route string) (*http.Response, error) {
-	res, err := api.client.Get(api.hostURL + "/v3" + route)
+// Get will return response from the passed in route of Habitica Api.
+// It will also return errors in either HTTP Protocol or if status
+// code is equal to or above 400.
+func (api *HabiticaAPI) Get(route string) ([]byte, error) {
+	res, protoerr := api.client.Get(api.hostURL + "/v3" + route)
 
-	if err != nil {
-		return nil, err
+	if protoerr != nil {
+		return nil, protoerr
 	}
 
-	if res.StatusCode >= 400 {
-		return nil, &Error{http.StatusText(res.StatusCode), res.StatusCode}
-	}
-
-	return res, nil
+	return parseHTTPBody(res), parseStatusErrors(res)
 }
 
-type Error struct {
-	msg  string
-	code int
-}
-
-func (err *Error) Error() string {
-	return err.msg
-}
-
-func (api *HabiticaAPI) ParseResponse(res *http.Response, responseType interface{}) interface{} {
-
+func parseHTTPBody(res *http.Response) []byte {
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
+	return body
+}
 
-	err = json.Unmarshal(body, &responseType)
+func parseStatusErrors(res *http.Response) error {
+	if res.StatusCode >= 400 {
+		return &APIError{http.StatusText(res.StatusCode), res.StatusCode}
+	}
+
+	return nil
+}
+
+// ParseResponse will unmarshal any byte[] array with the passed in `responsetype`
+// parameter.
+func (api *HabiticaAPI) ParseResponse(body []byte, responseType interface{}) {
+	err := json.Unmarshal(body, &responseType)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return responseType
 }
