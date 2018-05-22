@@ -28,19 +28,24 @@ var _ = Describe("Habitica API Router", func() {
 			server.Close()
 		})
 
-		Describe("when recieving okay status from api", func() {
-			It("returns with byte[] array of response from route", func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/v3"),
-						ghttp.RespondWith(200, `somebytes`),
-					),
-				)
+		Describe("when recieving okay headers from api", func() {
+			okStatuses := []int{
+				http.StatusOK, http.StatusCreated,
+			}
+			for _, status := range okStatuses {
+				It(http.StatusText(status)+" will return with byte[] array of response from route", func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/v3"),
+							ghttp.RespondWith(status, "somebytes"),
+						),
+					)
 
-				res, err := habitapi.Get("")
-				Expect(err).ToNot(HaveOccurred())
-				Expect(res).To(Equal([]byte(`somebytes`)))
-			})
+					res, err := habitapi.Get("")
+					Expect(err).ToNot(HaveOccurred())
+					Expect(res).To(Equal([]byte(`somebytes`)))
+				})
+			}
 		})
 
 		Describe("when recieving errors from api", func() {
@@ -53,12 +58,12 @@ var _ = Describe("Habitica API Router", func() {
 				It("will respond with "+http.StatusText(errorStatus)+" error when habitica error when api called failed", func() {
 					server.AppendHandlers(
 						ghttp.CombineHandlers(
-							ghttp.VerifyRequest("GET", "/v3/status"),
+							ghttp.VerifyRequest("GET", "/v3"),
 							ghttp.RespondWith(errorStatus, http.StatusText(errorStatus)),
 						),
 					)
 
-					_, err := habitapi.Status()
+					_, err := habitapi.Get("")
 
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal(http.StatusText(errorStatus)))

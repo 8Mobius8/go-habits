@@ -31,20 +31,6 @@ func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
 	return &api
 }
 
-// Status will return response from `/status` route of Habitica Api.
-// It will also return errors in either HTTP Protocol or if status
-// code is equal to or above 400.
-func (api *HabiticaAPI) Status() ([]byte, error) {
-	return api.Get("/status")
-}
-
-// Tasks will return response from `/task` route of Habitica Api.
-// It will also return errors in either HTTP Protocol or if status
-// code is equal to or above 400.
-func (api *HabiticaAPI) Tasks() ([]byte, error) {
-	return api.Get("/user")
-}
-
 // Get will return response from the passed in route of Habitica Api.
 // It will also return errors in either HTTP Protocol or if status
 // code is equal to or above 400.
