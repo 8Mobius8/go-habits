@@ -9,35 +9,15 @@ import (
 
 var _ = Describe("Isup", func() {
 	It("returns the funnies when Habitica is reachable.", func() {
-		resp := api.StatusResponse{
-			Success: true,
-			Data: struct {
-				Status string
-			}{
-				Status: "up",
-			},
-		}
+		var resp api.Status
+		resp = "up"
 
 		Expect(IsUpMessage(resp)).To(Equal("Habitica is reachable, GO catch all those pets!"))
 	})
 
 	It("returns the sad when Habitica is unreachable.", func() {
-		resp := api.StatusResponse{
-			Success: true,
-			Data: struct {
-				Status string
-			}{
-				Status: "down",
-			},
-		}
-
-		Expect(IsUpMessage(resp)).To(Equal(":( Habitica is unreachable."))
-	})
-
-	It("returns the sad when Habitica is unreachable.", func() {
-		resp := api.StatusResponse{
-			Success: false,
-		}
+		var resp api.Status
+		resp = "down"
 
 		Expect(IsUpMessage(resp)).To(Equal(":( Habitica is unreachable."))
 	})

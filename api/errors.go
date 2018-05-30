@@ -1,10 +1,11 @@
 package api
 
-type APIError struct {
+// GoHabitsError is simple error struct that holds an error code as int
+type GoHabitsError struct {
 	msg  string
 	code int
 }
 
-func (err *APIError) Error() string {
+func (err *GoHabitsError) Error() string {
 	return err.msg
 }

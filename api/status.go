@@ -3,20 +3,23 @@ package api
 // Status will return response from `/status` route of Habitica Api.
 // It will also return errors in either HTTP Protocol or if status
 // code is equal to or above 400.
-func (api *HabiticaAPI) Status() (StatusResponse, error) {
+func (api *HabiticaAPI) Status() (Status, error) {
 	body, err := api.Get("/status")
 
-	var status StatusResponse
+	var status statusResponse
 	if err == nil {
 		api.ParseResponse(body, &status)
 	}
 
-	return status, err
+	return status.Data.Status, err
 }
 
-type StatusResponse struct {
+// Status is string that is usually 'up' when Habitica API is fully available
+type Status string
+
+type statusResponse struct {
 	Success bool
 	Data    struct {
-		Status string
+		Status Status
 	}
 }

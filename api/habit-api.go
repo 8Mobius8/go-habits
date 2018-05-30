@@ -55,7 +55,7 @@ func parseHTTPBody(res *http.Response) []byte {
 
 func parseStatusErrors(res *http.Response) error {
 	if res.StatusCode >= 400 {
-		return &APIError{http.StatusText(res.StatusCode), res.StatusCode}
+		return &GoHabitsError{http.StatusText(res.StatusCode), res.StatusCode}
 	}
 
 	return nil

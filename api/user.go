@@ -1,5 +1,7 @@
 package api
 
+// Stats returns a Stats object with the currently authenticated
+// Habitica user's basic stats.
 func (api *HabiticaAPI) Stats() (Stats, error) {
 	body, err := api.Get("/user/anonymized")
 
@@ -51,6 +53,7 @@ type userResponse struct {
 	}
 }
 
+// Stats struct with User's current stats
 type Stats struct {
 	Level                 int
 	Health                int
