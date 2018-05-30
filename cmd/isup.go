@@ -24,7 +24,6 @@ import (
 	"fmt"
 
 	HabitApi "github.com/8Mobius8/go-habits/api"
-	"github.com/8Mobius8/go-habits/api/status"
 
 	"github.com/spf13/cobra"
 )
@@ -48,7 +47,7 @@ var isupCmd = &cobra.Command{
 	},
 }
 
-func IsUpMessage(resp status.StatusResponse) string {
+func IsUpMessage(resp HabitApi.StatusResponse) string {
 	if resp.Data.Status != "up" {
 		return ":( Habitica is unreachable."
 	}
