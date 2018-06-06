@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -68,4 +69,49 @@ func (api *HabiticaAPI) ParseResponse(body []byte, responseType interface{}) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
+	var creds userCredentials
+	creds.Username = user
+	creds.Password = password
+	body, err := api.Post("/user/auth/local/login", creds)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var resp UserTokenResponse
+	api.ParseResponse(body, &resp)
+
+	return resp.Data
+}
+
+type userCredentials struct {
+	Username string
+	Password string
+}
+
+type UserTokenResponse struct {
+	Data UserToken
+}
+type UserToken struct {
+	ID       string
+	APIToken string
+}
+
+func (api *HabiticaAPI) Post(url string, object interface{}) ([]byte, error) {
+	data, merr := json.Marshal(object)
+
+	if merr != nil {
+		return nil, merr
+	}
+
+	res, protoerr := api.client.Post(api.hostURL+"/v3"+url, "application/json", bytes.NewBuffer(data))
+
+	if protoerr != nil {
+		return nil, protoerr
+	}
+
+	return parseHTTPBody(res), parseStatusErrors(res)
 }

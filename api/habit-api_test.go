@@ -70,6 +70,22 @@ var _ = Describe("Habitica API Router", func() {
 				})
 			}
 		})
+
+		Describe("when authenicating user", func() {
+			It("get api token", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/v3/user/auth/local/login"),
+						ghttp.RespondWith(http.StatusOK, `{"success": true,"data": {"id": "guid","apiToken": "token","newUser": false},"appVersion": "4.41.5"}`),
+					),
+				)
+
+				creds := habitapi.Authenticate("bob", "p4ssw0rd")
+				Expect(creds.ID).To(Equal("guid"))
+				Expect(creds.APIToken).To(Equal("token"))
+			})
+		})
+
 	})
 
 	Describe("when parsing a http response", func() {
