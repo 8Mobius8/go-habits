@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"reflect"
 )
 
 // HabiticaAPI Main client for interacting with Habitica API via HTTP
@@ -24,10 +23,9 @@ func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
 		api.client = &http.Client{}
 	}
 
+	api.hostURL = hosturl
 	if hosturl == "" {
 		api.hostURL = `https://habitica.com/api`
-	} else {
-		api.hostURL = hosturl
 	}
 
 	return &api
@@ -36,47 +34,24 @@ func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
 // Do is a wrapper function around the api's http.client.Do but Marshals any json struct
 // given to it. Also, it will parse http status errors over 400 and return an error.
 func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
+	body, err := api.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	return parseResponse(body, responseType)
+}
+
+func (api *HabiticaAPI) doRequest(req *http.Request) ([]byte, error) {
 	res, err := api.client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	body, err := parseHTTPBody(res), parseStatusErrors(res)
-	if err != nil {
-		return err
-	}
-
-	var hres habiticaResponse
-	err = json.Unmarshal(body, &hres)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(hres.Data, &responseType)
-	if err != nil {
-		log.Println(string(hres.Data))
-		log.Println(responseType)
-		log.Fatalln(err)
-		if reflect.TypeOf(responseType).Kind() == reflect.String {
-			responseType = string(hres.Data)
-			return nil
-		}
-		return err
-	}
-
-	return nil
+	return readBody(res), parseStatusErrors(res)
 }
 
-type habiticaResponse struct {
-	Data   json.RawMessage
-	Error  string
-	Errors []struct {
-		Message string
-		Path    string
-	}
-}
-
-func parseHTTPBody(res *http.Response) []byte {
+func readBody(res *http.Response) []byte {
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
@@ -91,6 +66,30 @@ func parseStatusErrors(res *http.Response) error {
 	}
 
 	return nil
+}
+
+func parseResponse(body []byte, object interface{}) error {
+	var hres habiticaResponse
+	err := json.Unmarshal(body, &hres)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(hres.Data, &object)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type habiticaResponse struct {
+	Data   json.RawMessage
+	Error  string
+	Errors []struct {
+		Message string
+		Path    string
+	}
 }
 
 // Get will return response from the passed in route of Habitica Api.
