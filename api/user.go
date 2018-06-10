@@ -1,13 +1,17 @@
 package api
 
+import (
+	"log"
+)
+
 // Stats returns a Stats object with the currently authenticated
 // Habitica user's basic stats.
 func (api *HabiticaAPI) Stats() (Stats, error) {
-	body, err := api.Get("/user/anonymized")
-
 	var user userResponse
-	if err == nil {
-		api.ParseResponse(body, &user)
+	err := api.Get("/user/anonymized", &user)
+
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	charData := user.Data.User.Stats

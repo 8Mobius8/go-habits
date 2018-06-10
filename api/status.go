@@ -4,12 +4,8 @@ package api
 // It will also return errors in either HTTP Protocol or if status
 // code is equal to or above 400.
 func (api *HabiticaAPI) Status() (Status, error) {
-	body, err := api.Get("/status")
-
 	var status statusResponse
-	if err == nil {
-		api.ParseResponse(body, &status)
-	}
+	err := api.Get("/status", &status)
 
 	return status.Data.Status, err
 }

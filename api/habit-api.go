@@ -32,17 +32,25 @@ func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
 	return &api
 }
 
-// Get will return response from the passed in route of Habitica Api.
-// It will also return errors in either HTTP Protocol or if status
-// code is equal to or above 400.
-func (api *HabiticaAPI) Get(route string) ([]byte, error) {
-	res, protoerr := api.client.Get(api.hostURL + "/v3" + route)
-
+// Do is a wrapper function around the api's http.client.Do but Marshals any json struct
+// given to it. Also, it will parse http status errors over 400 and return an error.
+func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
+	res, protoerr := api.client.Do(req)
 	if protoerr != nil {
-		return nil, protoerr
+		return protoerr
 	}
 
-	return parseHTTPBody(res), parseStatusErrors(res)
+	body, err := parseHTTPBody(res), parseStatusErrors(res)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, &responseType)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func parseHTTPBody(res *http.Response) []byte {
@@ -62,56 +70,32 @@ func parseStatusErrors(res *http.Response) error {
 	return nil
 }
 
-// ParseResponse will unmarshal any byte[] array with the passed in `responsetype`
-// parameter.
-func (api *HabiticaAPI) ParseResponse(body []byte, responseType interface{}) {
-	err := json.Unmarshal(body, &responseType)
+// Get will return response from the passed in route of Habitica Api.
+// It will also return errors in either HTTP Protocol or if status
+// code is equal to or above 400.
+func (api *HabiticaAPI) Get(route string, responseType interface{}) error {
+	req, err := http.NewRequest("GET", api.hostURL+"/v3"+route, nil)
 	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
-	var creds userCredentials
-	creds.Username = user
-	creds.Password = password
-	body, err := api.Post("/user/auth/local/login", creds)
-
-	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
-	var resp UserTokenResponse
-	api.ParseResponse(body, &resp)
-
-	return resp.Data
+	err = api.Do(req, responseType)
+	return err
 }
 
-type userCredentials struct {
-	Username string
-	Password string
-}
-
-type UserTokenResponse struct {
-	Data UserToken
-}
-type UserToken struct {
-	ID       string
-	APIToken string
-}
-
-func (api *HabiticaAPI) Post(url string, object interface{}) ([]byte, error) {
-	data, merr := json.Marshal(object)
-
+// Post will take in route, request data as a struct, and response as a struct and output errors for
+// marshalling either.
+func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObject interface{}) error {
+	data, merr := json.Marshal(requestObject)
 	if merr != nil {
-		return nil, merr
+		return merr
 	}
 
-	res, protoerr := api.client.Post(api.hostURL+"/v3"+url, "application/json", bytes.NewBuffer(data))
-
-	if protoerr != nil {
-		return nil, protoerr
+	req, rerr := http.NewRequest("POST", api.hostURL+"/v3"+url, bytes.NewBuffer(data))
+	if rerr != nil {
+		return rerr
 	}
 
-	return parseHTTPBody(res), parseStatusErrors(res)
+	err := api.Do(req, &responseObject)
+	return err
 }
