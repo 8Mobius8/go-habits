@@ -7,14 +7,14 @@ import (
 // Stats returns a Stats object with the currently authenticated
 // Habitica user's basic stats.
 func (api *HabiticaAPI) Stats() (Stats, error) {
-	var user userResponse
-	err := api.Get("/user/anonymized", &user)
+	var res userResponse
+	err := api.Get("/user/anonymized", &res)
 
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	charData := user.Data.User.Stats
+	charData := res.User.Stats
 	var stats Stats
 	stats.Class = charData.Class
 	stats.Constitution = charData.Con
@@ -35,24 +35,22 @@ func (api *HabiticaAPI) Stats() (Stats, error) {
 }
 
 type userResponse struct {
-	Data struct {
-		User struct {
-			Stats struct {
-				Hp          int
-				Mp          int
-				Exp         int
-				Gp          int
-				Lvl         int
-				Class       string
-				Points      int
-				Str         int
-				Con         int
-				Int         int
-				Per         int
-				ToNextLevel int
-				MaxHealth   int
-				MaxMP       int
-			}
+	User struct {
+		Stats struct {
+			Hp          int
+			Mp          int
+			Exp         int
+			Gp          int
+			Lvl         int
+			Class       string
+			Points      int
+			Str         int
+			Con         int
+			Int         int
+			Per         int
+			ToNextLevel int
+			MaxHealth   int
+			MaxMP       int
 		}
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 // HabiticaAPI Main client for interacting with Habitica API via HTTP
@@ -35,9 +36,9 @@ func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
 // Do is a wrapper function around the api's http.client.Do but Marshals any json struct
 // given to it. Also, it will parse http status errors over 400 and return an error.
 func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
-	res, protoerr := api.client.Do(req)
-	if protoerr != nil {
-		return protoerr
+	res, err := api.client.Do(req)
+	if err != nil {
+		return err
 	}
 
 	body, err := parseHTTPBody(res), parseStatusErrors(res)
@@ -45,12 +46,34 @@ func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
 		return err
 	}
 
-	err = json.Unmarshal(body, &responseType)
+	var hres habiticaResponse
+	err = json.Unmarshal(body, &hres)
 	if err != nil {
 		return err
 	}
 
+	err = json.Unmarshal(hres.Data, &responseType)
+	if err != nil {
+		log.Println(string(hres.Data))
+		log.Println(responseType)
+		log.Fatalln(err)
+		if reflect.TypeOf(responseType).Kind() == reflect.String {
+			responseType = string(hres.Data)
+			return nil
+		}
+		return err
+	}
+
 	return nil
+}
+
+type habiticaResponse struct {
+	Data   json.RawMessage
+	Error  string
+	Errors []struct {
+		Message string
+		Path    string
+	}
 }
 
 func parseHTTPBody(res *http.Response) []byte {

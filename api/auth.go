@@ -5,7 +5,7 @@ import "log"
 // Authenticate will return Habitica ID and APIToken with given username
 // and password.
 func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
-	var resp UserTokenResponse
+	var resp UserToken
 	var creds userCredentials
 	creds.Username = user
 	creds.Password = password
@@ -15,16 +15,12 @@ func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
 		log.Fatalln(err)
 	}
 
-	return resp.Data
+	return resp
 }
 
 type userCredentials struct {
 	Username string
 	Password string
-}
-
-type UserTokenResponse struct {
-	Data UserToken
 }
 
 // UserToken contains user ID and Token to make API calls.

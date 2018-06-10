@@ -48,7 +48,7 @@ var isupCmd = &cobra.Command{
 }
 
 func IsUpMessage(resp HabitApi.Status) string {
-	if resp != "up" {
+	if resp.Status != "up" {
 		return ":( Habitica is unreachable."
 	}
 
