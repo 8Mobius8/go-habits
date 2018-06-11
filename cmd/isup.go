@@ -36,7 +36,7 @@ var isupCmd = &cobra.Command{
 	Use:   "isup",
 	Short: "Check if Habitica api is reachable.",
 	Run: func(cmd *cobra.Command, args []string) {
-		api := HabitApi.NewHabiticaAPI(nil, "https://habitica.com/api")
+		api := HabitApi.NewHabiticaAPI(nil, HabitsServerURL)
 
 		res, err := api.Status()
 		if err != nil {
@@ -47,6 +47,7 @@ var isupCmd = &cobra.Command{
 	},
 }
 
+// IsUpMessage returns text based on Status message
 func IsUpMessage(resp HabitApi.Status) string {
 	if resp.Status != "up" {
 		return ":( Habitica is unreachable."

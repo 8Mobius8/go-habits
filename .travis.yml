@@ -1,7 +1,3 @@
-env:
-  global:
-    - CC_TEST_REPORTER_ID=b0968a3855ab5bbeb5686eefb664d74a0f95753eadb988f453f5ed7a3f1ed34d
-
 language: go
 go:
   - tip

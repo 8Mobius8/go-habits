@@ -26,6 +26,10 @@ var _ = Describe("go-habits", func() {
 		Ω(err).ShouldNot(HaveOccurred())
 	})
 
+	AfterSuite(func() {
+		gexec.CleanupBuildArtifacts()
+	})
+
 	Describe("isup command", func() {
 		It("exits with a zero", func() {
 			command = exec.Command(goHabitsCLIPath, "isup")
@@ -37,7 +41,4 @@ var _ = Describe("go-habits", func() {
 		})
 	})
 
-	AfterSuite(func() {
-		gexec.CleanupBuildArtifacts()
-	})
 })

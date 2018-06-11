@@ -31,6 +31,9 @@ import (
 
 var cfgFile string
 
+// HabitsServerURL is the uri used to send API requests to
+var HabitsServerURL string
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "go-habits",
@@ -63,9 +66,8 @@ func init() {
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.go-habits.yaml)")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVarP(&HabitsServerURL, "server", "", "http://habitica.com/api", "Set to '/api' uri of desired habits server.")
+	viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))
 }
 
 // initConfig reads in config file and ENV variables if set.
