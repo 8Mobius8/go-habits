@@ -10,8 +10,9 @@ import (
 
 // HabiticaAPI Main client for interacting with Habitica API via HTTP
 type HabiticaAPI struct {
-	client  *http.Client
-	hostURL string
+	client   *http.Client
+	hostURL  string
+	userAuth UserToken
 }
 
 // NewHabiticaAPI is a function for creating a new client api. Can pass in prexisting client
@@ -34,12 +35,23 @@ func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
 // Do is a wrapper function around the api's http.client.Do but Marshals any json struct
 // given to it. Also, it will parse http status errors over 400 and return an error.
 func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
+	api.addAuthHeaders(req)
+
 	body, err := api.doRequest(req)
 	if err != nil {
 		return err
 	}
 
 	return parseResponse(body, responseType)
+}
+
+func (api *HabiticaAPI) addAuthHeaders(req *http.Request) {
+	if api.userAuth.APIToken != "" {
+		req.Header.Add("x-api-key", api.userAuth.APIToken)
+	}
+	if api.userAuth.ID != "" {
+		req.Header.Add("x-api-user", api.userAuth.ID)
+	}
 }
 
 func (api *HabiticaAPI) doRequest(req *http.Request) ([]byte, error) {
