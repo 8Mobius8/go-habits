@@ -23,6 +23,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/spf13/viper"
+
 	HabitApi "github.com/8Mobius8/go-habits/api"
 
 	"github.com/spf13/cobra"
@@ -36,7 +38,7 @@ var isupCmd = &cobra.Command{
 	Use:   "isup",
 	Short: "Check if Habitica api is reachable.",
 	Run: func(cmd *cobra.Command, args []string) {
-		api := HabitApi.NewHabiticaAPI(nil, HabitsServerURL)
+		api := HabitApi.NewHabiticaAPI(nil, viper.GetString("server"))
 
 		res, err := api.Status()
 		if err != nil {

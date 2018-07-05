@@ -102,7 +102,7 @@ var _ = Describe("Habitica API Router", func() {
 				InputA string
 				InputB int
 			}
-			requestBody := requestType{"penis", 25}
+			requestBody := requestType{"test", 25}
 
 			body, _ := json.Marshal(requestBody)
 

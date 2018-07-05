@@ -36,9 +36,8 @@ var _ = Describe("go-habits", func() {
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			Eventually(session).Should(gbytes.Say(`Habitica is reachable, GO catch all those pets\!`))
+			Eventually(session).Should(gbytes.Say(`Habitica is reachable, GO catch all those pets!`))
 			Eventually(session).Should(gexec.Exit(0))
 		})
 	})
-
 })

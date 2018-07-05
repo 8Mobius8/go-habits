@@ -36,6 +36,7 @@ func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
 // given to it. Also, it will parse http status errors over 400 and return an error.
 func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
 	api.addAuthHeaders(req)
+	req.Header.Add("content-type", "application/json")
 
 	body, err := api.doRequest(req)
 	if err != nil {
