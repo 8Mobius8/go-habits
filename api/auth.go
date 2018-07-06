@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -15,7 +14,7 @@ func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
 		user,
 		password,
 	}
-	fmt.Printf("Authenticating as %s\n", user)
+
 	var resp UserToken
 	err := api.Post("/user/auth/local/login", creds, &resp)
 	if err != nil {
