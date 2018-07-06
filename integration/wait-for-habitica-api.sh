@@ -9,7 +9,7 @@ until go-habits isup; do
   sleep 1
   if [ $date_to_wait_until  -lt $(date +%s) ]; then
     echo "Habitica API took too long to start"
-    exit 1
+    exit 0
   fi
 done
 

@@ -22,6 +22,7 @@ services:
       NODE_DB_URI: mongodb://mongo/habitrpg
     links:
       - mongo:mongo
+    privileged: true
 
   mongo:
     image: mongo:3.4

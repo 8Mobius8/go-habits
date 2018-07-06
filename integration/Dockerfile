@@ -1,9 +1,12 @@
 FROM golang:1.10 AS builder
 
-RUN mkdir -p $GOPATH/src/github.com/8Mobius8/go-habits
-WORKDIR $GOPATH/src/github.com/8Mobius8/go-habits
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
-COPY . .
+WORKDIR $GOPATH/src/github.com/8Mobius8/go-habits
+COPY Gopkg.toml Gopkg.lock ./
+RUN dep ensure -v -vendor-only
+
+COPY . ./
 
 RUN go install
 
