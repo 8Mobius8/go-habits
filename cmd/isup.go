@@ -22,6 +22,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/viper"
 
@@ -43,6 +44,7 @@ var isupCmd = &cobra.Command{
 		res, err := api.Status()
 		if err != nil {
 			fmt.Println(err)
+			os.Exit(5)
 		}
 
 		fmt.Println(IsUpMessage(res))

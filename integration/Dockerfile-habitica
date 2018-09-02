@@ -1,0 +1,16 @@
+FROM node:8
+
+# Clone Habitica repo and install dependencies
+RUN git clone --depth 1 --branch release https://github.com/HabitRPG/habitica.git /usr/src/habitrpg
+WORKDIR /usr/src/habitrpg
+RUN cp config.json.example config.json
+RUN npm install --unsafe-perm
+
+# Create Build dir
+RUN mkdir -p ./website/build
+
+# Start Habitica
+EXPOSE 3000
+ENV NODE_ENV=development
+RUN npm config list
+CMD [ "npm", "--verbose", "start" ]

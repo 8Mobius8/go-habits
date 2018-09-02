@@ -1,3 +1,9 @@
+.vscode
+
 go-habits
+
 *coverprofile
 *.cov
+c.out
+
+vendor
