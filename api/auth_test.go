@@ -1,4 +1,4 @@
-package api_test
+package api
 
 import (
 	"net/http"
@@ -6,8 +6,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
-
-	. "github.com/8Mobius8/go-habits/api"
 )
 
 var _ = Describe("Habitica API Router", func() {
@@ -26,51 +24,38 @@ var _ = Describe("Habitica API Router", func() {
 		server.Close()
 	})
 
-	Describe("when authenicating user", func() {
-		It("get api token", func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/v3/user/auth/local/login"),
-					ghttp.RespondWith(http.StatusOK, `{"success": true,"data":{"id": "guid","apiToken": "token","newUser": false},"appVersion": "4.41.5"}`),
-				),
-			)
+	Describe("when authenicating with user", func() {
+		var expectedCreds UserToken
 
+		BeforeEach(func() {
+			expectedCreds = defaultUserCredientials()
+			server.AppendHandlers(
+				defaultAuthHandlers(expectedCreds.ID, expectedCreds.APIToken),
+			)
+		})
+
+		It("get api token", func() {
 			creds := habitapi.Authenticate("bob", "p4ssw0rd")
-			Expect(creds.ID).To(Equal("guid"))
-			Expect(creds.APIToken).To(Equal("token"))
+			Expect(creds.ID).To(Equal(expectedCreds.ID))
+			Expect(creds.APIToken).To(Equal(expectedCreds.APIToken))
 		})
 
 		It("will call request with authenticated headers", func() {
 			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/v3/user/auth/local/login"),
-					ghttp.RespondWith(http.StatusOK, `{"success": true,"data":{"id": "guid","apiToken": "token","newUser": false},"appVersion": "4.41.5"}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/v3/empty"),
-					ghttp.VerifyHeader(http.Header{
-						"x-api-user": []string{"guid"},
-					}),
-					ghttp.VerifyHeader(http.Header{
-						"x-api-key": []string{"token"},
-					}),
-				),
+				VerifyAuthHeaders(expectedCreds.ID, expectedCreds.APIToken),
 			)
 
 			type empty struct{}
 			var e empty
 			habitapi.Authenticate("bob", "p4ssw0rd")
-			req, _ := http.NewRequest("GET", server.URL()+"/v3/empty", nil)
-			habitapi.Do(req, &e)
+			habitapi.Get("/empty", &e)
 		})
 	})
 
 	Describe("when user has not been authenticated", func() {
 		It("will call request without authenticated headers", func() {
 			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/v3/empty"),
-				),
+				ghttp.VerifyRequest("GET", "/v3/empty"),
 			)
 
 			type empty struct{}
@@ -86,3 +71,32 @@ var _ = Describe("Habitica API Router", func() {
 		})
 	})
 })
+
+func defaultUserCredientials() UserToken {
+	return UserToken{
+		ID:       "id",
+		APIToken: "token",
+	}
+}
+
+func defaultAuthHandlers(id string, token string) http.HandlerFunc {
+	return ghttp.CombineHandlers(
+		ghttp.VerifyRequest("POST", "/v3/user/auth/local/login"),
+		RespondAuthWithOk(id, token),
+	)
+}
+
+func RespondAuthWithOk(id string, token string) http.HandlerFunc {
+	return ghttp.RespondWith(http.StatusOK, `{ "success": true,"data":{"id": "`+id+`","apiToken": "`+token+`","newUser": false},"appVersion": "4.41.5"}`)
+}
+
+func VerifyAuthHeaders(id string, token string) http.HandlerFunc {
+	return ghttp.CombineHandlers(
+		ghttp.VerifyHeader(http.Header{
+			"x-api-user": []string{id},
+		}),
+		ghttp.VerifyHeader(http.Header{
+			"x-api-key": []string{token},
+		}),
+	)
+}
