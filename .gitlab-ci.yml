@@ -3,10 +3,10 @@ unit:
   stage: test
   before_script:
     - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-    - mkdir -p /go/src/github.com/8Mobius8 /go/src/_/builds
-    - cp -r $CI_PROJECT_DIR /go/src/github.com/8Mobius8/go-habits
-    - ln -s /go/src/github.com/8Mobius8 /go/src/_/builds/8Mobius8
-    - cd /go/src/github.com/8Mobius8/go-habits
+    - mkdir -p /go/src/gitlab.com/8Mobius8 /go/src/_/builds
+    - cp -r $CI_PROJECT_DIR /go/src/gitlab.com/8Mobius8/go-habits
+    - ln -s /go/src/gitlab.com/8Mobius8 /go/src/_/builds/8Mobius8
+    - cd /go/src/gitlab.com/8Mobius8/go-habits
     - make deps
   script:
     - make test-unit
