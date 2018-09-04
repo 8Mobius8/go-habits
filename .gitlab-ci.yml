@@ -10,6 +10,9 @@ unit:
     - make deps
   script:
     - make test-unit
+  artifacts:
+    paths:
+      - ./c.out
 
 integration:
   stage: test
