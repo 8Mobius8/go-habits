@@ -6,10 +6,10 @@ deps:
 test:	test-unit test-integration
 
 test-unit:
-	go test -coverprofile=c.out ./ ./api/... ./cmd/...
+	go test -coverprofile=c.out ./api/... ./cmd/...
 
 test-integration:
-	docker-compose build integration
+	docker-compose build
 	docker-compose run --rm integration
 
 build:

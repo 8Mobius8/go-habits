@@ -13,4 +13,4 @@ RUN mkdir -p ./website/build
 EXPOSE 3000
 ENV NODE_ENV=development
 RUN npm config list
-CMD [ "node", "./website/server/index.js" ]
+CMD [ "npm", "--verbose", "start" ]
