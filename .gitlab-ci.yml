@@ -2,17 +2,25 @@ unit:
   image: golang:1.10
   stage: test
   before_script:
-    - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
     - mkdir -p /go/src/gitlab.com/8Mobius8 /go/src/_/builds
     - cp -r $CI_PROJECT_DIR /go/src/gitlab.com/8Mobius8/go-habits
     - ln -s /go/src/gitlab.com/8Mobius8 /go/src/_/builds/8Mobius8
     - cd /go/src/gitlab.com/8Mobius8/go-habits
+
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+    - chmod +x ./cc-test-reporter
+
+    - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
     - make deps
+
+    - ./cc-test-reporter before-build
   script:
-    - make test-unit
-  artifacts:
-    paths:
-      - ./c.out
+    - cd /go/src/gitlab.com/8Mobius8/go-habits
+    - make test-unit; echo $? > stage-status.txt
+    - exit $(<stage-status.txt)
+  after_script:
+    - cd /go/src/gitlab.com/8Mobius8/go-habits
+    - ./cc-test-reporter after-build --exit-code $(<stage-status.txt)
 
 integration:
   stage: test
