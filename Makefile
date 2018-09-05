@@ -12,6 +12,10 @@ test-integration:
 	docker-compose build
 	docker-compose run --rm integration
 
+test-images:
+	docker build -t registry.gitlab.com/8mobius8/go-habits/api -f integration/Dockerfile-habitica .
+	docker push registry.gitlab.com/8mobius8/go-habits/api 
+
 build:
 	go build
 
