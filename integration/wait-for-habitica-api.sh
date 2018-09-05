@@ -4,14 +4,17 @@ set -e
 
 cmd="$@"
 date_to_wait_until=$(date -d "+1mins" +%s)
-until go-habits isup; do
-  >&2 echo "Habitica API is down at $SERVER"
+echo "Waiting Habitica API to be up"
+until go-habits isup > /dev/null 2>&1; do
+  >&2 printf "."
   sleep 1
   if [ $date_to_wait_until  -lt $(date +%s) ]; then
+    echo
     echo "Habitica API took too long to start"
     exit 0
   fi
 done
 
+echo
 >&2 echo "Habitica API is up at starting running '$cmd'"
 exec $cmd
