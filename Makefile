@@ -1,7 +1,7 @@
 BUILD_VERSION 	?= $(shell git describe --tags)
 SERVER 					?= http://localhost:3000/api
-INTEGRATION_ENV	:= BUILD_VERSION=${BUILD_VERSION} SERVER=${SERVER}
-LDFLAGS 				:= -ldflags "-X main.version=${BUILD_VERSION}"
+INTEGRATION_ENV	?= BUILD_VERSION=${BUILD_VERSION} SERVER=${SERVER}
+LDFLAGS 				?= -ldflags "-X main.version=${BUILD_VERSION}"
 
 .PHONY: clean
 all: deps test build install
