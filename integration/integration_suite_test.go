@@ -27,6 +27,7 @@ const (
 )
 
 var HABITICA_API string
+var BUILD_VERSION string
 var apiClient *api.HabiticaAPI
 var apiToken string
 var apiID string
@@ -40,6 +41,10 @@ var _ = Describe("go-habits", func() {
 		Ω(exists).ShouldNot(BeFalse())
 		Ω(HABITICA_API).ShouldNot(BeEmpty())
 
+		BUILD_VERSION, exists = os.LookupEnv("BUILD_VERSION")
+		Ω(exists).ShouldNot(BeFalse())
+		Ω(BUILD_VERSION).ShouldNot(BeEmpty())
+
 		apiClient = api.NewHabiticaAPI(nil, HABITICA_API)
 		RegisterUser(HABITICA_API, userName, password, email)
 	})
@@ -49,9 +54,9 @@ var _ = Describe("go-habits", func() {
 		DeleteUser(HABITICA_API, userName, password, "go-habits integration test")
 	})
 
-	Describe("isup command", func() {
+	Describe("status command", func() {
 		It("exits with a zero", func() {
-			command = exec.Command(GOHABITS, "isup")
+			command = exec.Command(GOHABITS, "status")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Ω(err).ShouldNot(HaveOccurred())
 
@@ -77,6 +82,19 @@ var _ = Describe("go-habits", func() {
 			stdin.Write([]byte(password + "\n"))
 
 			Eventually(session).Should(gbytes.Say(`Didn't find config file. Create one at ~/.go-habits.yaml to save api key for later use.`))
+			Eventually(session).Should(gexec.Exit(0))
+		})
+	})
+
+	Describe("version command", func() {
+		It("displays full version information", func() {
+			command = exec.Command(GOHABITS, "version")
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Eventually(session).Should(gbytes.Say(
+				`go-habits version ` + BUILD_VERSION,
+			))
 			Eventually(session).Should(gexec.Exit(0))
 		})
 	})
