@@ -8,6 +8,4 @@ RUN dep ensure -v -vendor-only
 
 COPY . ./
 
-RUN go install
-
-ENTRYPOINT ./integration/wait-for-habitica-api.sh go test -v ./integration/...
+CMD ./integration/wait-for-habitica-api.sh make test-integration
