@@ -26,6 +26,10 @@ test-images:
 	docker build -t registry.gitlab.com/8mobius8/go-habits/api -f integration/Dockerfile-habitica .
 	docker push registry.gitlab.com/8mobius8/go-habits/api 
 
+test-docker:
+	docker-compose build
+	docker-compose run integration
+
 build:
 	go build ${LDFLAGS}
 

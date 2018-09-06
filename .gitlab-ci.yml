@@ -2,9 +2,8 @@ unit:
   image: golang:1.10
   stage: test
   before_script:
-    - mkdir -p /go/src/gitlab.com/8Mobius8 /go/src/_/builds
-    - cp -r $CI_PROJECT_DIR /go/src/gitlab.com/8Mobius8/go-habits
-    - ln -s /go/src/gitlab.com/8Mobius8 /go/src/_/builds/8Mobius8
+    - mkdir -p /go/src/gitlab.com/8Mobius8
+    - mv $CI_PROJECT_DIR /go/src/gitlab.com/8Mobius8/go-habits
     - cd /go/src/gitlab.com/8Mobius8/go-habits
     - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
     - chmod +x ./cc-test-reporter
