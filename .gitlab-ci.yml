@@ -6,13 +6,10 @@ unit:
     - cp -r $CI_PROJECT_DIR /go/src/gitlab.com/8Mobius8/go-habits
     - ln -s /go/src/gitlab.com/8Mobius8 /go/src/_/builds/8Mobius8
     - cd /go/src/gitlab.com/8Mobius8/go-habits
-
     - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
     - chmod +x ./cc-test-reporter
-
     - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
     - make deps
-
     - ./cc-test-reporter before-build
   script:
     - cd /go/src/gitlab.com/8Mobius8/go-habits
@@ -32,5 +29,5 @@ integration:
     - apk add --no-cache py-pip make
     - pip install docker-compose
   script:
-    - make test-integration
+    - make test-docker
     
