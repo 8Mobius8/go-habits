@@ -8,7 +8,7 @@ unit:
     - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
     - chmod +x ./cc-test-reporter
     - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-    - make deps
+    - make dep
     - ./cc-test-reporter before-build
   script:
     - cd /go/src/gitlab.com/8Mobius8/go-habits
