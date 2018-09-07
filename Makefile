@@ -4,9 +4,12 @@ INTEGRATION_ENV	?= BUILD_VERSION=${BUILD_VERSION} SERVER=${SERVER}
 LDFLAGS 				?= -ldflags "-X main.version=${BUILD_VERSION}"
 
 .PHONY: clean
-all: deps test build install
-deps:
+
+dep:
 	dep ensure
+
+dep-clean:
+	rm -rf ./vendor
 
 test:	test-unit test-integration
 
@@ -30,12 +33,15 @@ test-docker:
 	docker-compose build
 	docker-compose run integration
 
+test-clean:
+	docker-compose down -v -t 0
+	rm c.out
+
 build:
 	go build ${LDFLAGS}
 
 install:
 	go install ${LDFLAGS}
 
-clean:
+clean: test-clean dep-clean
 	go clean
-	docker-compose down -v -t 0

@@ -10,7 +10,7 @@ import (
 
 func TestCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cmd Suite")
+	RunSpecs(t, "cmd package unit tests")
 }
 
 var _ = Describe("Status", func() {
