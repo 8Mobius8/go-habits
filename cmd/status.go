@@ -20,8 +20,8 @@ var isupCmd = &cobra.Command{
 	Short:   "Check if Habitica api is reachable.",
 	Aliases: []string{"s"},
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Using " + viper.GetString("server") + " as api server")
 		api := HabitApi.NewHabiticaAPI(nil, viper.GetString("server"))
-
 		res, err := api.Status()
 		if err != nil {
 			fmt.Println(err)
@@ -41,3 +41,4 @@ func StatusMessage(resp HabitApi.Status) string {
 
 	return "Habitica is reachable, GO catch all those pets!"
 }
+

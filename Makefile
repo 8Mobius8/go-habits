@@ -20,10 +20,9 @@ test-integration: install
 	${INTEGRATION_ENV} \
 	go test -v ./integration/...
 
-test-watch:
-	docker-compose up -d habitica
+test-watch: install test-docker-start
 	${INTEGRATION_ENV} \
-	ginkgo watch ./...
+	ginkgo watch -skipPackage integration ./...
 
 test-images:
 	docker build -t registry.gitlab.com/8mobius8/go-habits/api -f integration/Dockerfile-habitica .
@@ -32,6 +31,9 @@ test-images:
 test-docker:
 	docker-compose build
 	docker-compose run integration
+
+test-docker-start:
+	docker-compose up -d habitica
 
 test-clean:
 	docker-compose down -v -t 0
