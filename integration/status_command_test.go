@@ -47,4 +47,12 @@ var _ = Describe("go-habits status", func() {
 			Eventually(session).Should(gexec.Exit(5))
 		})
 	})
+	Context("when --server option is used", func() {
+		It("will change api server to given --server", func() {
+			inlineServerURI := "http://inlineserverruri/api"
+			session := GoHabits("status", "--server", inlineServerURI)
+
+			Eventually(session).Should(gbytes.Say("Using " + inlineServerURI + " as api server"))
+		})
+	})
 })
