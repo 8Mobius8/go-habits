@@ -1,4 +1,4 @@
-package api_test
+package api
 
 import (
 	"encoding/json"
@@ -7,25 +7,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
-
-	. "github.com/8Mobius8/go-habits/api"
 )
 
 var _ = Describe("Habitica API Router", func() {
-
-	var (
-		server   *ghttp.Server
-		habitapi *HabiticaAPI
-	)
-
-	BeforeEach(func() {
-		server = ghttp.NewServer()
-		habitapi = NewHabiticaAPI(nil, server.URL())
-	})
-
-	AfterEach(func() {
-		server.Close()
-	})
 
 	Describe("when recieving okay headers from api", func() {
 		okStatuses := []int{
@@ -138,7 +122,7 @@ var _ = Describe("Habitica API Router", func() {
 					server.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/v3"),
-							ghttp.RespondWith(errorStatus, http.StatusText(errorStatus)),
+							ghttp.RespondWith(errorStatus, `{"success":false,"error":"`+http.StatusText(errorStatus)+`"}`),
 						),
 					)
 
@@ -146,18 +130,18 @@ var _ = Describe("Habitica API Router", func() {
 					habitErr := err.(*GoHabitsError)
 
 					Expect(habitErr).To(HaveOccurred())
-					Expect(habitErr.Error()).To(Equal(http.StatusText(errorStatus)))
-					Expect(habitErr.Code).To(Equal(errorStatus))
+					Expect(habitErr.Error()).Should(ContainSubstring(http.StatusText(errorStatus)))
+					Expect(habitErr.StatusCode).To(Equal(errorStatus))
 				})
 			}
 		})
 
-		XDescribe("and errors are Habitica API errors", func() {
+		Describe("and errors are Habitica API errors", func() {
 
 			It("will response with Habitica error message Go-Habits Status code", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						//https://habitica.com/apidoc/#api-User-UserGet
+						// https://habitica.com/apidoc/#api-User-UserGet
 						ghttp.VerifyRequest("GET", "/v3/user"),
 						ghttp.RespondWith(http.StatusUnauthorized, `{"success":false,"error":"NotAuthorized","message":"Missing authentication headers."}`),
 					),
@@ -168,8 +152,9 @@ var _ = Describe("Habitica API Router", func() {
 				habitErr := err.(*GoHabitsError)
 
 				Expect(habitErr).To(HaveOccurred())
-				Expect(habitErr.Error()).To(Equal("Missing authentication headers."))
-				Expect(habitErr.Code).To(Equal(401))
+				Expect(habitErr.StatusCode).To(Equal(401))
+				Expect(habitErr.Error()).To(Equal("NotAuthorized\nMissing authentication headers."))
+				Expect(habitErr.Path).To(Equal("/v3/user"))
 			})
 		})
 	})
