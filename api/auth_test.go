@@ -10,20 +10,6 @@ import (
 
 var _ = Describe("Habitica API Router", func() {
 
-	var (
-		server   *ghttp.Server
-		habitapi *HabiticaAPI
-	)
-
-	BeforeEach(func() {
-		server = ghttp.NewServer()
-		habitapi = NewHabiticaAPI(nil, server.URL())
-	})
-
-	AfterEach(func() {
-		server.Close()
-	})
-
 	Describe("when authenicating with user", func() {
 		var expectedCreds UserToken
 

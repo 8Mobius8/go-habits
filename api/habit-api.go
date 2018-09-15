@@ -38,12 +38,12 @@ func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
 	api.addAuthHeaders(req)
 	req.Header.Add("content-type", "application/json")
 
-	body, err := api.doRequest(req)
+	res, err := api.client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	return parseResponse(body, responseType)
+	return parseResponse(readBody(res), res, responseType)
 }
 
 func (api *HabiticaAPI) addAuthHeaders(req *http.Request) {
@@ -53,15 +53,6 @@ func (api *HabiticaAPI) addAuthHeaders(req *http.Request) {
 	if api.userAuth.ID != "" {
 		req.Header.Add("x-api-user", api.userAuth.ID)
 	}
-}
-
-func (api *HabiticaAPI) doRequest(req *http.Request) ([]byte, error) {
-	res, err := api.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return readBody(res), parseStatusErrors(res)
 }
 
 func readBody(res *http.Response) []byte {
@@ -75,33 +66,46 @@ func readBody(res *http.Response) []byte {
 
 func parseStatusErrors(res *http.Response) error {
 	if res.StatusCode >= 400 {
-		return &GoHabitsError{http.StatusText(res.StatusCode), res.StatusCode}
+		return NewGoHabitsError(http.StatusText(res.StatusCode), res.StatusCode, res.Request.RequestURI)
 	}
 
 	return nil
 }
 
-func parseResponse(body []byte, object interface{}) error {
+func parseResponse(body []byte, res *http.Response, object interface{}) error {
 	var hres habiticaResponse
-	err := json.Unmarshal(body, &hres)
-	if err != nil {
-		return err
+	var err error
+
+	if len(body) > 0 {
+		err = json.Unmarshal(body, &hres)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = json.Unmarshal(hres.Data, &object)
-	if err != nil {
-		return err
+	if hres.Error != "" {
+		errMessage := hres.Error + "\n" + hres.Message
+		for _, errorMessage := range hres.Errors {
+			errMessage += "\n" + errorMessage.Message
+		}
+		return NewGoHabitsError(errMessage, res.StatusCode, res.Request.URL.EscapedPath())
 	}
 
+	if len(body) > 0 {
+		err = json.Unmarshal(hres.Data, &object)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 type habiticaResponse struct {
-	Data   json.RawMessage
-	Error  string
-	Errors []struct {
+	Data    json.RawMessage
+	Error   string
+	Message string
+	Errors  []struct {
 		Message string
-		Path    string
 	}
 }
 
@@ -114,8 +118,7 @@ func (api *HabiticaAPI) Get(route string, responseType interface{}) error {
 		return err
 	}
 
-	err = api.Do(req, responseType)
-	return err
+	return api.Do(req, responseType)
 }
 
 // Post will take in route, request data as a struct, and response as a struct and output errors for
