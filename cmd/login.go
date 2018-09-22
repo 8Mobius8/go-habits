@@ -43,7 +43,7 @@ func setAuthConfig(creds HabitApi.UserToken) {
 func saveToConfigFile() {
 	fmt.Println(viper.ConfigFileUsed())
 	if viper.ConfigFileUsed() == "" {
-		fmt.Println("Didn't find config file. Create one at ~/.go-habits.yaml to save api key for later use.")
+		fmt.Println("Didn't find config file. Create one at ~/.go-habits.yml to save api key for later use.")
 	} else {
 		fmt.Printf("Updating config at %s\n", viper.ConfigFileUsed())
 		viper.WriteConfig()

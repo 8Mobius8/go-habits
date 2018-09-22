@@ -21,12 +21,13 @@ func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
 		log.Fatalln(err)
 	}
 
-	api.updateUserAuth(resp)
+	api.UpdateUserAuth(resp)
 
 	return resp
 }
 
-func (api *HabiticaAPI) updateUserAuth(creds UserToken) {
+// UpdateUserAuth takes a UserToken object and updates apiclient's user's id and token.
+func (api *HabiticaAPI) UpdateUserAuth(creds UserToken) {
 	if api.userAuth.ID != creds.ID {
 		api.userAuth.ID = creds.ID
 	}

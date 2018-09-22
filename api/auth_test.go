@@ -29,13 +29,33 @@ var _ = Describe("Habitica API Router", func() {
 		It("will call request with authenticated headers", func() {
 			server.AppendHandlers(
 				VerifyAuthHeaders(expectedCreds.ID, expectedCreds.APIToken),
+				VerifyAuthHeaders(expectedCreds.ID, expectedCreds.APIToken),
 			)
 
 			type empty struct{}
 			var e empty
 			habitapi.Authenticate("bob", "p4ssw0rd")
 			habitapi.Get("/empty", &e)
+			habitapi.Post("/empty", &e, &e)
 		})
+
+		Context("when using Do will do any type of request with authenticated headers", func() {
+			methods := []string{
+				http.MethodGet, http.MethodDelete, http.MethodPut, http.MethodPost, http.MethodPatch,
+			}
+			for _, method := range methods {
+				It("will do any type of request with authenticated headers", func() {
+					habitapi.Authenticate("bob", "p4ssw0rd")
+					req, _ := http.NewRequest(method, "/echo", nil)
+
+					type empty struct{}
+					var e empty
+					habitapi.Do(req, e)
+				})
+			}
+
+		})
+
 	})
 
 	Describe("when user has not been authenticated", func() {
@@ -52,8 +72,8 @@ var _ = Describe("Habitica API Router", func() {
 			reqs := server.ReceivedRequests()
 			Expect(len(reqs)).To(Equal(1))
 			actualReq := reqs[0]
-			Expect(actualReq.Header.Get("x-api-user")).To(Equal(""))
-			Expect(actualReq.Header.Get("x-api-key")).To(Equal(""))
+			Expect(actualReq.Header).ShouldNot(HaveKey("x-api-user"))
+			Expect(actualReq.Header).ShouldNot(HaveKey("x-api-key"))
 		})
 	})
 })
