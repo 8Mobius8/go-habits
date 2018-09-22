@@ -19,9 +19,19 @@ var listCmd = &cobra.Command{
 	Aliases: []string{"l", "l t"},
 	Run: func(cmd *cobra.Command, args []string) {
 		apiClient := api.NewHabiticaAPI(nil, viper.GetString("server"))
+		apiClient.UpdateUserAuth(getAuthConfig())
 		todos := apiClient.GetTodos()
 		PrintTodos(todos)
 	},
+}
+
+func getAuthConfig() api.UserToken {
+	id := viper.GetString("auth.local.id")
+	token := viper.GetString("auth.local.apitoken")
+	creds := api.UserToken{}
+	creds.ID = id
+	creds.APIToken = token
+	return creds
 }
 
 // PrintTodos ...

@@ -40,10 +40,10 @@ var _ = BeforeSuite(func() {
 
 	apiClient = api.NewHabiticaAPI(nil, HABITICA_API)
 	RegisterUser(HABITICA_API, userName, password, email)
+	SaveAPIToken(HABITICA_API, userName, password)
 })
 
 var _ = AfterSuite(func() {
-	SaveAPIToken(HABITICA_API, userName, password)
 	DeleteUser(HABITICA_API, userName, password, "go-habits integration test")
 })
 
