@@ -1,5 +1,6 @@
 package api
 
+// Tag is struct for tags on tasks
 type Tag struct {
 	Id   string
 	Name string

@@ -2,6 +2,7 @@ package api
 
 import (
 	"log"
+	"net/http"
 )
 
 // Authenticate will return Habitica ID and APIToken with given username
@@ -33,6 +34,15 @@ func (api *HabiticaAPI) UpdateUserAuth(creds UserToken) {
 	}
 	if api.userAuth.APIToken != creds.APIToken {
 		api.userAuth.APIToken = creds.APIToken
+	}
+}
+
+func (api *HabiticaAPI) addAuthHeaders(req *http.Request) {
+	if api.userAuth.APIToken != "" {
+		req.Header.Add("x-api-key", api.userAuth.APIToken)
+	}
+	if api.userAuth.ID != "" {
+		req.Header.Add("x-api-user", api.userAuth.ID)
 	}
 }
 

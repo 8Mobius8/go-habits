@@ -9,6 +9,8 @@ type Todo struct {
 	Tags  []string `json:"tags"`
 }
 
+// GetTodos will return todos from Habitica as authenticated user.
+// Should call api.Authenticate() before using this.
 func (api *HabiticaAPI) GetTodos() []Todo {
 	todos := api.getTodos()
 	addOrder(todos)
