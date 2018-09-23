@@ -43,16 +43,8 @@ func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
 		return err
 	}
 
-	return parseResponse(readBody(res), res, responseType)
-}
-
-func (api *HabiticaAPI) addAuthHeaders(req *http.Request) {
-	if api.userAuth.APIToken != "" {
-		req.Header.Add("x-api-key", api.userAuth.APIToken)
-	}
-	if api.userAuth.ID != "" {
-		req.Header.Add("x-api-user", api.userAuth.ID)
-	}
+	body := readBody(res)
+	return parseResponse(body, res, responseType)
 }
 
 func readBody(res *http.Response) []byte {
@@ -62,14 +54,6 @@ func readBody(res *http.Response) []byte {
 		log.Fatal(err)
 	}
 	return body
-}
-
-func parseStatusErrors(res *http.Response) error {
-	if res.StatusCode >= 400 {
-		return NewGoHabitsError(http.StatusText(res.StatusCode), res.StatusCode, res.Request.RequestURI)
-	}
-
-	return nil
 }
 
 func parseResponse(body []byte, res *http.Response, object interface{}) error {
@@ -84,11 +68,7 @@ func parseResponse(body []byte, res *http.Response, object interface{}) error {
 	}
 
 	if hres.Error != "" {
-		errMessage := hres.Error + "\n" + hres.Message
-		for _, errorMessage := range hres.Errors {
-			errMessage += "\n" + errorMessage.Message
-		}
-		return NewGoHabitsError(errMessage, res.StatusCode, res.Request.URL.EscapedPath())
+		return parseHabitsServerError(hres, res)
 	}
 
 	if len(body) > 0 {
@@ -107,6 +87,14 @@ type habiticaResponse struct {
 	Errors  []struct {
 		Message string
 	}
+}
+
+func parseHabitsServerError(hres habiticaResponse, res *http.Response) error {
+	errMessage := hres.Error + "\n" + hres.Message
+	for _, errorMessage := range hres.Errors {
+		errMessage += "\n" + errorMessage.Message
+	}
+	return NewGoHabitsError(errMessage, res.StatusCode, res.Request.URL.EscapedPath())
 }
 
 // Get will return response from the passed in route of Habitica Api.
