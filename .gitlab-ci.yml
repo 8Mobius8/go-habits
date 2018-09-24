@@ -2,20 +2,20 @@ unit:
   image: golang:1.10
   stage: test
   before_script:
-    - mkdir -p /go/src/gitlab.com/8Mobius8
-    - ln -s $CI_PROJECT_DIR /go/src/gitlab.com/8Mobius8/go-habits
-    - cd /go/src/gitlab.com/8Mobius8/go-habits
+    - mkdir -p /go/src/github.com/8Mobius8
+    - ln -s $CI_PROJECT_DIR /go/src/github.com/8Mobius8/go-habits
+    - cd /go/src/github.com/8Mobius8/go-habits
     - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
     - chmod +x ./cc-test-reporter
     - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
     - make dep
     - ./cc-test-reporter before-build
   script:
-    - cd /go/src/gitlab.com/8Mobius8/go-habits
+    - cd /go/src/github.com/8Mobius8/go-habits
     - make test-unit; echo $? > stage-status.txt
     - exit $(<stage-status.txt)
   after_script:
-    - cd /go/src/gitlab.com/8Mobius8/go-habits
+    - cd /go/src/github.com/8Mobius8/go-habits
     - ./cc-test-reporter after-build --exit-code $(<stage-status.txt)
 
 integration:
