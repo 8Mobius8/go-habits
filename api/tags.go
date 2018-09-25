@@ -2,7 +2,7 @@ package api
 
 // Tag is struct for tags on tasks
 type Tag struct {
-	Id   string
+	ID   string
 	Name string
 }
 
@@ -25,9 +25,9 @@ func (api *HabiticaAPI) getTag(id string) Tag {
 	tag := Tag{}
 	if !exists {
 		api.Get("/tags/"+id, &tag)
-		tagsCache[tag.Id] = tag.Name
+		tagsCache[tag.ID] = tag.Name
 	}
-	tag.Id = id
+	tag.ID = id
 	tag.Name = tagsCache[id]
 	return tag
 }

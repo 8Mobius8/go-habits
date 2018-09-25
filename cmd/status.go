@@ -41,4 +41,3 @@ func StatusMessage(resp HabitApi.Status) string {
 
 	return "Habitica is reachable, GO catch all those pets!"
 }
-

@@ -23,7 +23,7 @@ var _ = Describe("Todos", func() {
 
 			tag := habitapi.getTag(tagID)
 
-			Expect(tag.Id).Should(Equal(tagID))
+			Expect(tag.ID).Should(Equal(tagID))
 			Expect(tag.Name).Should(Equal("chores"))
 		})
 	})
