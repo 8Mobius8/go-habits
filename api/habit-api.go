@@ -121,7 +121,6 @@ func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObje
 	if rerr != nil {
 		return rerr
 	}
-
-	err := api.Do(req, &responseObject)
+	err := api.Do(req, responseObject)
 	return err
 }
