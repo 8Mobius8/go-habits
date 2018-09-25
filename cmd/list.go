@@ -37,6 +37,10 @@ func getAuthConfig() api.UserToken {
 // PrintTodos ...
 func PrintTodos(todos []api.Todo) {
 	for _, todo := range todos {
-		fmt.Printf("%d %s\n", todo.Order, todo.Title)
+		fmt.Printf("%d[ ] %s", todo.Order, todo.Title)
+		for _, tag := range todo.Tags {
+			fmt.Printf(" #%s", tag)
+		}
+		fmt.Println()
 	}
 }
