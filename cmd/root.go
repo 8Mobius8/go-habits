@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	cmds "github.com/8Mobius8/go-habits/cmd/commands"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -41,6 +42,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&HabitsServerURL, "server", "", "http://habitica.com/api", "Set to '/api' uri of desired habits server.")
 	viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))
+	addGoHabitCommands(rootCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -67,4 +69,48 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func addGoHabitCommands(rootCmd *cobra.Command) {
+	rootCmd.AddCommand(addCmd)
+	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(versionCmd)
+}
+
+var addCmd = &cobra.Command{
+	Use:     "add",
+	Short:   "Add a todo to Habitica",
+	Aliases: []string{"a", "a t"},
+	Run:     cmds.Add,
+}
+
+var listCmd = &cobra.Command{
+	Use:     "list",
+	Short:   "List todos",
+	Aliases: []string{"l", "l t"},
+	Run:     cmds.List,
+}
+
+var loginCmd = &cobra.Command{
+	Use:   "login",
+	Short: "Authenicates with Habits server and saves api token in config file.",
+	Long:  `Authenicates with Habits server and saves api token in config file.`,
+	Run:   cmds.Login,
+}
+
+var statusCmd = &cobra.Command{
+	Use:     "status",
+	Short:   "Check if Habitica api is reachable.",
+	Aliases: []string{"s"},
+	Run:     cmds.Status,
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Display version of go-habits.",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(rootCmd.Use + " version " + rootCmd.Version)
+	},
 }
