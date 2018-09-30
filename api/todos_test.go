@@ -66,7 +66,7 @@ const (
 			"id": "d268201e-26c9-32a4-a81c-570c7ca4526b",
 			"name": "work"
 		}
-	}`
+		}`
 	ChoresWorkTodos = `{"success":"true","notifications":[],
 		"data":[
 			{
@@ -131,6 +131,19 @@ const (
 				"id":"chore-id-6"
 			}]
 		}`
+
+	NewTodo = `{"success":"true","notifications":[],
+		"data":{
+				"text":"New Todo",
+				"type":"todo",
+				"tags":[],
+				"value":10,
+				"priority":1,
+				"attribute":"str",
+				"createdAt":"2017-01-07T17:52:09.121Z",
+				"updatedAt":"2017-01-11T14:25:32.504Z",
+				"id":"chore-id-1"
+		}}`
 )
 
 var _ = Describe("Todos", func() {
@@ -155,9 +168,9 @@ var _ = Describe("Todos", func() {
 	Describe("addOrder", func() {
 		It("returns todos with Order as given", func() {
 			var todos = []Todo{
-				{0, "Clean Dishes", []string{"tag-guid-1"}},
-				{0, "Laundry", []string{"tag-guid-1"}},
-				{0, "Make bed", []string{"tag-guid-1"}},
+				{0, "Clean Dishes", []string{"tag-guid-1"}, ""},
+				{0, "Laundry", []string{"tag-guid-1"}, ""},
+				{0, "Make bed", []string{"tag-guid-1"}, ""},
 			}
 
 			addOrder(todos)
@@ -166,6 +179,23 @@ var _ = Describe("Todos", func() {
 			for i, todo := range todos {
 				Expect(todo.Order).Should(BeNumerically("==", i+1))
 			}
+		})
+	})
+
+	Describe("AddTodo", func() {
+		It("will return a todo with an new id", func() {
+			t := Todo{}
+			t.Title = "New Todo"
+
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/v3/tasks/user"),
+					ghttp.RespondWith(201, NewTodo),
+				),
+			)
+
+			t = habitapi.AddTodo(t)
+			Expect(t.ID).ShouldNot(BeEmpty())
 		})
 	})
 })

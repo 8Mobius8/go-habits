@@ -15,7 +15,7 @@ func init() {
 
 var listCmd = &cobra.Command{
 	Use:     "list",
-	Short:   "List",
+	Short:   "List todos",
 	Aliases: []string{"l", "l t"},
 	Run: func(cmd *cobra.Command, args []string) {
 		apiClient := api.NewHabiticaAPI(nil, viper.GetString("server"))
@@ -34,13 +34,16 @@ func getAuthConfig() api.UserToken {
 	return creds
 }
 
-// PrintTodos ...
 func PrintTodos(todos []api.Todo) {
 	for _, todo := range todos {
-		fmt.Printf("%d[ ] %s", todo.Order, todo.Title)
-		for _, tag := range todo.Tags {
-			fmt.Printf(" #%s", tag)
-		}
-		fmt.Println()
+		PrintTodo(todo)
 	}
+}
+
+func PrintTodo(todo api.Todo) {
+	fmt.Printf("%d[ ] %s", todo.Order, todo.Title)
+	for _, tag := range todo.Tags {
+		fmt.Printf(" #%s", tag)
+	}
+	fmt.Println()
 }

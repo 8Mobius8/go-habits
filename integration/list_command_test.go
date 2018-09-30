@@ -15,13 +15,13 @@ var _ = Describe("go-habits list", func() {
 	})
 
 	Context("User is already signed in", func() {
-		var configPath string
+
 		BeforeEach(func() {
-			configPath = TouchConfigFile()
+			TouchConfigFile()
 			expectSuccessfulLogin(userName, password)
 		})
 		AfterEach(func() {
-			RemoveConfigFile(configPath)
+			RemoveConfigFile()
 		})
 		It("lists a task", func() {
 			addTask("Do the dishes")

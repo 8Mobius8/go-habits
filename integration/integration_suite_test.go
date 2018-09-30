@@ -19,11 +19,13 @@ func TestIntegration(t *testing.T) {
 	RunSpecs(t, "Integration Suite")
 }
 
-var HABITICA_API string
-var BUILD_VERSION string
-var apiClient *api.HabiticaAPI
-var apiToken string
-var apiID string
+var (
+	HABITICA_API  string
+	BUILD_VERSION string
+	apiClient     *api.HabiticaAPI
+	apiToken      string
+	apiID         string
+)
 
 // Global go-habits command
 var command *exec.Cmd
@@ -97,6 +99,15 @@ func SaveAPIToken(serverUri, username, password string) {
 func DeleteUser(serverUri, username, password, feedback string) {
 	payload := `{"password":"` + password + `","feedback":"` + feedback + `"}`
 	req, err := http.NewRequest("DELETE", serverUri+"/v3/user", bytes.NewBuffer([]byte(payload)))
+	Ω(err).ShouldNot(HaveOccurred())
+	err = apiClient.Do(req, nil)
+	Ω(err).ShouldNot(HaveOccurred())
+}
+
+// ResetUser leaves auth and api token but removes all data from their account.
+func ResetUser(serverUri, token, userId string) {
+	payload := ""
+	req, err := http.NewRequest("POST", serverUri+"/v3/user/reset", bytes.NewBuffer([]byte(payload)))
 	Ω(err).ShouldNot(HaveOccurred())
 	err = apiClient.Do(req, nil)
 	Ω(err).ShouldNot(HaveOccurred())

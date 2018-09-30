@@ -32,7 +32,7 @@ var _ = Describe("go-habits login", func() {
 			configPath = TouchConfigFile()
 		})
 		AfterEach(func() {
-			RemoveConfigFile(configPath)
+			RemoveConfigFile()
 		})
 		It("updates tokens to file", func() {
 			s, in := GoHabitsWithStdin("login")
@@ -62,15 +62,19 @@ func EventuallyLogin(session *gexec.Session, in io.WriteCloser, username, passwo
 func TouchConfigFile() string {
 	userHomePath, err := homedir.Dir()
 	Expect(err).ShouldNot(HaveOccurred())
-	configPath := userHomePath + "/.go-habits.yml"
+	path := userHomePath + "/.go-habits.yml"
 
-	err = ioutil.WriteFile(configPath, []byte("test"), 0644)
+	err = ioutil.WriteFile(path, []byte("test"), 0644)
 	Expect(err).ShouldNot(HaveOccurred())
 
-	return configPath
+	return path
 }
 
-func RemoveConfigFile(path string) {
-	err := os.Remove(path)
+func RemoveConfigFile() {
+	userHomePath, err := homedir.Dir()
+	Expect(err).ShouldNot(HaveOccurred())
+	path := userHomePath + "/.go-habits.yml"
+
+	err = os.Remove(path)
 	Expect(err).ShouldNot(HaveOccurred())
 }
