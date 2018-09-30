@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -8,22 +8,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-func init() {
-	rootCmd.AddCommand(loginCmd)
-}
-
-// loginCmd represents the login command
-var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Authenicates with Habits server and saves api token in config file.",
-	Long:  `Authenicates with Habits server and saves api token in config file.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		api := HabitApi.NewHabiticaAPI(nil, viper.GetString("server"))
-		user := scanForUserCreds()
-		creds := api.Authenticate(user.UserName, user.Password)
-		setAuthConfig(creds)
-		saveToConfigFile()
-	},
+// Login or `go-habits login` allows habiters to logon to a
+// habitica server and save their api id and token to a config
+// file. The file must be previously created.
+func Login(cmd *cobra.Command, args []string) {
+	api := HabitApi.NewHabiticaAPI(nil, viper.GetString("server"))
+	user := scanForUserCreds()
+	creds := api.Authenticate(user.UserName, user.Password)
+	setAuthConfig(creds)
+	saveToConfigFile()
 }
 
 func scanForUserCreds() HabitApi.UserToken {

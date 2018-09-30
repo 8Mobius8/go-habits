@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -9,20 +9,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-func init() {
-	rootCmd.AddCommand(listCmd)
-}
-
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List todos",
-	Aliases: []string{"l", "l t"},
-	Run: func(cmd *cobra.Command, args []string) {
-		apiClient := api.NewHabiticaAPI(nil, viper.GetString("server"))
-		apiClient.UpdateUserAuth(getAuthConfig())
-		todos := apiClient.GetTodos()
-		PrintTodos(todos)
-	},
+// List or `go-habits list` command allows habiters to see
+// their list of todos currently needing to be completed.
+func List(cmd *cobra.Command, args []string) {
+	apiClient := api.NewHabiticaAPI(nil, viper.GetString("server"))
+	apiClient.UpdateUserAuth(getAuthConfig())
+	todos := apiClient.GetTodos()
+	printTodos(todos)
 }
 
 func getAuthConfig() api.UserToken {
@@ -34,13 +27,13 @@ func getAuthConfig() api.UserToken {
 	return creds
 }
 
-func PrintTodos(todos []api.Todo) {
+func printTodos(todos []api.Todo) {
 	for _, todo := range todos {
-		PrintTodo(todo)
+		printTodo(todo)
 	}
 }
 
-func PrintTodo(todo api.Todo) {
+func printTodo(todo api.Todo) {
 	fmt.Printf("%d[ ] %s", todo.Order, todo.Title)
 	for _, tag := range todo.Tags {
 		fmt.Printf(" #%s", tag)

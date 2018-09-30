@@ -105,7 +105,7 @@ func DeleteUser(serverUri, username, password, feedback string) {
 }
 
 // ResetUser leaves auth and api token but removes all data from their account.
-func ResetUser(serverUri, token, userId string) {
+func ResetUser(serverUri, userId, token string) {
 	payload := ""
 	req, err := http.NewRequest("POST", serverUri+"/v3/user/reset", bytes.NewBuffer([]byte(payload)))
 	Ω(err).ShouldNot(HaveOccurred())
