@@ -1,17 +1,10 @@
-package commands
+package cmd
 
 import (
-	"testing"
-
 	"github.com/8Mobius8/go-habits/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
-
-func TestCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "commands package unit tests")
-}
 
 var _ = Describe("Status", func() {
 	It("returns the funnies when Habitica is reachable.", func() {

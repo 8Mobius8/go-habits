@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"os"
 
-	cmds "github.com/8Mobius8/go-habits/cmd/commands"
+	api "github.com/8Mobius8/go-habits/api"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
-
-// HabitsServerURL is the uri used to send API requests to
-var HabitsServerURL string
+var habitsServer *api.HabiticaAPI
+var habitsServerURL string
 
 // Version of CLI, is set by go flags
 var Version string
@@ -23,6 +22,23 @@ var rootCmd = &cobra.Command{
 	Use:   "go-habits",
 	Short: "A Habitica CLI-interface written in go.",
 	Long:  `A Habitica command line interface written in golang.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		setupAPIClient()
+	},
+}
+
+func setupAPIClient() {
+	habitsServer = api.NewHabiticaAPI(nil, viper.GetString("server"))
+	habitsServer.UpdateUserAuth(getAuthConfig())
+}
+
+func getAuthConfig() api.UserToken {
+	id := viper.GetString("auth.local.id")
+	token := viper.GetString("auth.local.apitoken")
+	creds := api.UserToken{}
+	creds.ID = id
+	creds.APIToken = token
+	return creds
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -40,9 +56,8 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.go-habits.yml)")
 
-	rootCmd.PersistentFlags().StringVarP(&HabitsServerURL, "server", "", "http://habitica.com/api", "Set to '/api' uri of desired habits server.")
+	rootCmd.PersistentFlags().StringVarP(&habitsServerURL, "server", "", "http://habitica.com/api", "Set to '/api' uri of desired habits server.")
 	viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))
-	addGoHabitCommands(rootCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -69,48 +84,4 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
-}
-
-func addGoHabitCommands(rootCmd *cobra.Command) {
-	rootCmd.AddCommand(addCmd)
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(loginCmd)
-	rootCmd.AddCommand(statusCmd)
-	rootCmd.AddCommand(versionCmd)
-}
-
-var addCmd = &cobra.Command{
-	Use:     "add",
-	Short:   "Add a todo to Habitica",
-	Aliases: []string{"a", "a t"},
-	Run:     cmds.Add,
-}
-
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List todos",
-	Aliases: []string{"l", "l t"},
-	Run:     cmds.List,
-}
-
-var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Authenicates with Habits server and saves api token in config file.",
-	Long:  `Authenicates with Habits server and saves api token in config file.`,
-	Run:   cmds.Login,
-}
-
-var statusCmd = &cobra.Command{
-	Use:     "status",
-	Short:   "Check if Habitica api is reachable.",
-	Aliases: []string{"s"},
-	Run:     cmds.Status,
-}
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display version of go-habits.",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(rootCmd.Use + " version " + rootCmd.Version)
-	},
 }
