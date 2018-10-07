@@ -33,9 +33,8 @@ var _ = Describe("go-habits add command", func() {
 			It("will print newly created task and order as confirmation", func() {
 				s := GoHabits("add", "clean my fishbowl")
 				Eventually(s).Should(gexec.Exit(0))
-
 				s = GoHabits("add", "make bed")
-				Eventually(s).Should(gbytes.Say("2"))
+				Eventually(s).Should(gbytes.Say("1"))
 				Eventually(s).Should(gbytes.Say("make bed"))
 				Eventually(s).Should(gexec.Exit(0))
 			})

@@ -1,13 +1,15 @@
 package api
 
 import (
+	. "github.com/onsi/ginkgo/extensions/table"
+	"github.com/onsi/gomega/ghttp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/ghttp"
 )
 
 const (
-	DishesTodo = `{"success":"true","notifications":[],
+	DishesTask = `{"success":"true","notifications":[],
 		"data":[
 			{
 				"text":"Clean the dishes",
@@ -21,7 +23,7 @@ const (
 				"id":"8a9d461b-f5eb-4a16-97d3-c03380c422a3"
 				}]
 		}`
-	ChoresTodos = `{"success":"true","notifications":[],
+	ChoresTasks = `{"success":"true","notifications":[],
 		"data":[
 			{
 				"text":"Clean the dishes",
@@ -67,7 +69,7 @@ const (
 			"name": "work"
 		}
 		}`
-	ChoresWorkTodos = `{"success":"true","notifications":[],
+	ChoresWorkTasks = `{"success":"true","notifications":[],
 		"data":[
 			{
 				"text":"Clean the dishes",
@@ -132,11 +134,11 @@ const (
 			}]
 		}`
 
-	NewTodo = `{"success":"true","notifications":[],
+	ValidTask = `{"success":"true","notifications":[],
 		"data":{
-				"text":"New Todo",
+				"text":"Valid Todo Title",
 				"type":"todo",
-				"tags":[],
+				"tags":["valid", "test"],
 				"value":10,
 				"priority":1,
 				"attribute":"str",
@@ -146,56 +148,90 @@ const (
 		}}`
 )
 
-var _ = Describe("Todos", func() {
+var _ = Describe("Tasks", func() {
 
-	Describe("getTodos", func() {
-		It("returns at least one valid todo", func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/v3/tasks/user"),
-					ghttp.RespondWith(200, DishesTodo),
-				),
-			)
-
-			todos := habitapi.getTodos()
-
-			Expect(len(todos)).Should(BeNumerically("==", 1))
-			todo := todos[0]
-			Expect(todo.Title).Should(Equal("Clean the dishes"))
+	Describe("GetTasks", func() {
+		Context("when given 'todo' type parameter", func() {
+			It("calls server for todo type tasks for user", func() {
+				server.AppendHandlers(
+					ghttp.VerifyRequest("GET", "/v3/tasks/user", "type=todos"),
+				)
+				habitapi.GetTasks(Todo)
+			})
 		})
 	})
 
 	Describe("addOrder", func() {
-		It("returns todos with Order as given", func() {
-			var todos = []Todo{
-				{0, "Clean Dishes", []string{"tag-guid-1"}, ""},
-				{0, "Laundry", []string{"tag-guid-1"}, ""},
-				{0, "Make bed", []string{"tag-guid-1"}, ""},
+		It("returns tasks with Order as given", func() {
+			var tasks = []Task{
+				{0, "Clean Dishes", []string{"tag-guid-1"}, "", "todo"},
+				{0, "Laundry", []string{"tag-guid-1"}, "", "todo"},
+				{0, "Make bed", []string{"tag-guid-1"}, "", "todo"},
 			}
 
-			addOrder(todos)
+			addOrder(tasks)
 
-			Expect(len(todos)).Should(BeNumerically("==", 3))
-			for i, todo := range todos {
-				Expect(todo.Order).Should(BeNumerically("==", i+1))
+			Expect(len(tasks)).Should(BeNumerically("==", 3))
+			for i, task := range tasks {
+				Expect(task.Order).Should(BeNumerically("==", i+1))
 			}
 		})
 	})
 
-	Describe("AddTodo", func() {
-		It("will return a todo with an new id", func() {
-			t := Todo{}
-			t.Title = "New Todo"
+	Describe("AddTask", func() {
+		Context("given valid task", func() {
+			var t Task
+			BeforeEach(func() {
+				t = Task{}
+				t.Title = "Valid Todo Title"
+				t.Tags = []string{"valid", "test"}
+			})
+			It("will return a task with an new id", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/v3/tasks/user"),
+						ghttp.RespondWith(201, ValidTask),
+					),
+				)
 
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/v3/tasks/user"),
-					ghttp.RespondWith(201, NewTodo),
-				),
-			)
+				task, _ := habitapi.AddTask(t)
+				Expect(task.ID).ShouldNot(BeEmpty())
+			})
+			It("will return a task with same title", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/v3/tasks/user"),
+						ghttp.RespondWith(201, ValidTask),
+					),
+				)
 
-			t = habitapi.AddTodo(t)
-			Expect(t.ID).ShouldNot(BeEmpty())
+				task, _ := habitapi.AddTask(t)
+				Expect(task.Title).Should(Equal(t.Title))
+			})
+			It("will return a task with tags names", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/v3/tasks/user"),
+						ghttp.RespondWith(201, ValidTask),
+					),
+				)
+
+				task, _ := habitapi.AddTask(t)
+				Expect(task.Tags).Should(Equal([]string{"valid", "test"}))
+			})
 		})
+
+		Context("given a task that is invalid", func() {
+			DescribeTable("will return error and empty task",
+				func(t Task) {
+					t, err := habitapi.AddTask(t)
+					Expect(err).Should(HaveOccurred())
+					Expect(t).Should(Equal(Task{}))
+				},
+				Entry("a task with out a title", Task{Title: ""}),
+				Entry("a task with an id", Task{ID: "something"}),
+			)
+		})
+
 	})
 })

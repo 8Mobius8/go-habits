@@ -8,7 +8,7 @@ type Tag struct {
 
 var tagsCache = make(map[string]string)
 
-func (api *HabiticaAPI) getTags(t Todo) []string {
+func (api *HabiticaAPI) getTags(t Task) []string {
 	tagNames := make([]string, len(t.Tags))
 
 	for i, tagID := range t.Tags {

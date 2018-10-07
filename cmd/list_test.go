@@ -7,26 +7,26 @@ import (
 )
 
 var _ = Describe("List command", func() {
-	Describe("formatTodo", func() {
-		Context("given a todo without tags", func() {
+	Describe("formatTask", func() {
+		Context("given a task without tags", func() {
 			It("will return a formated string with the values filled in", func() {
-				t := api.Todo{}
+				t := api.Task{}
 				t.ID = randomId()
 				t.Order = 1
-				t.Title = " a simple todo I need to complete"
+				t.Title = " a simple task I need to complete"
 
-				Expect(formatTodo(t)).Should(MatchRegexp(`[0-9]+\[ \] [\s\w]+`))
+				Expect(formatTask(t)).Should(MatchRegexp(`[0-9]+\[ \] [\s\w]+`))
 			})
 		})
-		Context("given a todo with tags", func() {
+		Context("given a task with tags", func() {
 			It("will return a formated string with the values filled in", func() {
-				t := api.Todo{}
+				t := api.Task{}
 				t.ID = randomId()
 				t.Order = 1
-				t.Title = " a simple todo I need to complete"
+				t.Title = " a simple task I need to complete"
 				t.Tags = []string{"misc", "uncategorised"}
 
-				Expect(formatTodo(t)).Should(MatchRegexp(`[0-9]+\[ \] [\s\w]+ (#[\w]+ )+`))
+				Expect(formatTask(t)).Should(MatchRegexp(`[0-9]+\[ \] [\s\w]+ (#[\w]+ )+`))
 			})
 		})
 
