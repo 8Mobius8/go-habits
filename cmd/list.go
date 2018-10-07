@@ -23,17 +23,17 @@ var listCmd = &cobra.Command{
 // their list of todos currently needing to be completed.
 func List(cmd *cobra.Command, args []string) {
 	apiClient := habitsServer
-	todos := apiClient.GetTodos()
-	printTodos(todos)
+	tasks := apiClient.GetTasks(api.Todo)
+	printTasks(tasks)
 }
 
-func printTodos(todos []api.Todo) {
-	for _, todo := range todos {
-		fmt.Println(formatTodo(todo))
+func printTasks(tasks []api.Task) {
+	for _, task := range tasks {
+		fmt.Println(formatTask(task))
 	}
 }
 
-func formatTodo(t api.Todo) string {
+func formatTask(t api.Task) string {
 	s := fmt.Sprintf("%d[ ] %s ", t.Order, t.Title)
 	for _, tag := range t.Tags {
 		s += fmt.Sprintf(" #%s", tag)

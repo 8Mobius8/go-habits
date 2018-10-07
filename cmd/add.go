@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	api "github.com/8Mobius8/go-habits/api"
 	"github.com/spf13/cobra"
 )
@@ -23,28 +27,58 @@ var addCmd = &cobra.Command{
 func Add(cmd *cobra.Command, args []string) {
 	client := habitsServer
 
-	t := api.Todo{}
-	t.Title = parseTodoTitle(args)
-	t = client.AddTodo(t)
+	t := api.NewTask(api.Todo)
+	t.Title = parseTaskTitle(args)
+	fmt.Println(t)
 
-	todos := client.GetTodos()
-	printTodos(filterTodo(t.ID, todos))
+	t, err := client.AddTask(t)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	tasks := client.GetTasks(api.Todo)
+	printTasks(filterTask(t.ID, tasks))
 }
 
-func filterTodo(id string, todos []api.Todo) []api.Todo {
-	var filtered []api.Todo
-	for _, todo := range todos {
-		if todo.ID == id {
-			filtered = append(filtered, todo)
+func filterTask(id string, tasks []api.Task) []api.Task {
+	var filtered []api.Task
+	for _, task := range tasks {
+		if task.ID == id {
+			filtered = append(filtered, task)
 		}
 	}
 	return filtered
 }
 
-func parseTodoTitle(args []string) string {
+func parseTaskTitle(args []string) string {
 	title := args[0]
 	for _, arg := range args[1:] {
 		title += " " + arg
 	}
 	return title
+}
+
+func parseTask(args []string) api.Task {
+	var titleArgs, tagsArgs []string
+
+	for _, arg := range args {
+		if arg[0] == '#' {
+			tagsArgs = append(tagsArgs, arg)
+		} else {
+			titleArgs = append(titleArgs, arg)
+		}
+	}
+
+	t := api.Task{}
+	t.Tags = parseTags(tagsArgs)
+	t.Title = parseTaskTitle(titleArgs)
+	return t
+}
+
+func parseTags(args []string) []string {
+	for i, arg := range args {
+		args[i] = strings.Split(arg, "#")[1]
+	}
+	return args
 }

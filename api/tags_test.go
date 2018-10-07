@@ -6,13 +6,13 @@ import (
 	"github.com/onsi/gomega/ghttp"
 )
 
-var _ = Describe("Todos", func() {
+var _ = Describe("Tags", func() {
 	BeforeEach(func() {
 		tagsCache = make(map[string]string)
 	})
 
 	Describe("getTag", func() {
-		It("returns todos with same tags, as words", func() {
+		It("returns tasks with same tags, as words", func() {
 			var tagID = "d268201e-c926-4a32-8ac1-7ca570c26b45"
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
@@ -29,11 +29,11 @@ var _ = Describe("Todos", func() {
 	})
 
 	Describe("getTags", func() {
-		It("returns todos with same tags, as words", func() {
+		It("returns tasks with same tags, as words", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/v3/tasks/user"),
-					ghttp.RespondWith(200, ChoresTodos),
+					ghttp.VerifyRequest("GET", "/v3/tasks/user", "type=todos"),
+					ghttp.RespondWith(200, ChoresTasks),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/v3/tags/d268201e-c926-4a32-8ac1-7ca570c26b45"),
@@ -41,19 +41,19 @@ var _ = Describe("Todos", func() {
 				),
 			)
 
-			todos := habitapi.GetTodos()
+			tasks := habitapi.GetTasks(Todo)
 
-			Expect(len(todos)).Should(BeNumerically("==", 3))
-			for _, todo := range todos {
-				Expect(todo.Tags).Should(ConsistOf("chores"))
+			Expect(len(tasks)).Should(BeNumerically("==", 3))
+			for _, task := range tasks {
+				Expect(task.Tags).Should(ConsistOf("chores"))
 			}
 		})
 
-		It("returns todos with different tags, as words", func() {
+		It("returns tasks with different tags, as words", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/v3/tasks/user"),
-					ghttp.RespondWith(200, ChoresWorkTodos),
+					ghttp.VerifyRequest("GET", "/v3/tasks/user", "type=todos"),
+					ghttp.RespondWith(200, ChoresWorkTasks),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/v3/tags/d268201e-c926-4a32-8ac1-7ca570c26b45"),
@@ -65,15 +65,15 @@ var _ = Describe("Todos", func() {
 				),
 			)
 
-			todos := habitapi.GetTodos()
+			tasks := habitapi.GetTasks(Todo)
 
-			Expect(len(todos)).Should(BeNumerically("==", 6))
-			Expect(todos[0].Tags).Should(ConsistOf("chores"))
-			Expect(todos[1].Tags).Should(ConsistOf("chores"))
-			Expect(todos[2].Tags).Should(ConsistOf("chores"))
-			Expect(todos[3].Tags).Should(ConsistOf("work"))
-			Expect(todos[4].Tags).Should(ConsistOf("work"))
-			Expect(todos[5].Tags).Should(ConsistOf("work"))
+			Expect(len(tasks)).Should(BeNumerically("==", 6))
+			Expect(tasks[0].Tags).Should(ConsistOf("chores"))
+			Expect(tasks[1].Tags).Should(ConsistOf("chores"))
+			Expect(tasks[2].Tags).Should(ConsistOf("chores"))
+			Expect(tasks[3].Tags).Should(ConsistOf("work"))
+			Expect(tasks[4].Tags).Should(ConsistOf("work"))
+			Expect(tasks[5].Tags).Should(ConsistOf("work"))
 		})
 	})
 })
