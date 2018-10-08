@@ -27,7 +27,7 @@ var statusCmd = &cobra.Command{
 func Status(cmd *cobra.Command, args []string) {
 	fmt.Println("Using " + viper.GetString("server") + " as api server")
 	client := habitsServer
-	res, err := client.Status()
+	res, err := client.GetServerStatus()
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println(StatusMessage(res))

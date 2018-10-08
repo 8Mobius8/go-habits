@@ -122,15 +122,13 @@ var _ = Describe("Habitica API Router", func() {
 					server.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/v3"),
-							ghttp.RespondWith(errorStatus, `{"success":false,"error":"`+http.StatusText(errorStatus)+`"}`),
+							ghttp.RespondWith(errorStatus, ``),
 						),
 					)
 
 					err := habitapi.Get("", nil)
 					habitErr := err.(*GoHabitsError)
-
-					Expect(habitErr).To(HaveOccurred())
-					Expect(habitErr.Error()).Should(ContainSubstring(http.StatusText(errorStatus)))
+					Expect(err).Should(HaveOccurred())
 					Expect(habitErr.StatusCode).To(Equal(errorStatus))
 				})
 			}
