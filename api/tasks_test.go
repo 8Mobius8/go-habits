@@ -156,7 +156,7 @@ var _ = Describe("Tasks", func() {
 				server.AppendHandlers(
 					ghttp.VerifyRequest("GET", "/v3/tasks/user", "type=todos"),
 				)
-				habitapi.GetTasks(Todo)
+				habitapi.GetTasks(TodoType)
 			})
 		})
 	})
@@ -232,6 +232,5 @@ var _ = Describe("Tasks", func() {
 				Entry("a task with an id", Task{ID: "something"}),
 			)
 		})
-
 	})
 })
