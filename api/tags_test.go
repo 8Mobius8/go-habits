@@ -41,7 +41,7 @@ var _ = Describe("Tags", func() {
 				),
 			)
 
-			tasks := habitapi.GetTasks(Todo)
+			tasks := habitapi.GetTasks(TodoType)
 
 			Expect(len(tasks)).Should(BeNumerically("==", 3))
 			for _, task := range tasks {
@@ -65,7 +65,7 @@ var _ = Describe("Tags", func() {
 				),
 			)
 
-			tasks := habitapi.GetTasks(Todo)
+			tasks := habitapi.GetTasks(TodoType)
 
 			Expect(len(tasks)).Should(BeNumerically("==", 6))
 			Expect(tasks[0].Tags).Should(ConsistOf("chores"))

@@ -11,14 +11,19 @@ type Task struct {
 	Type  string   `json:"type"`
 }
 
+// TaskType is a int representation of the different types of
+// tasks that Habitica has in it's api. Use the standard
+// String() method to have a string version.
 type TaskType int
 
+// Constant types that should be used when creating or getting
+// tasks from Habitica server.
 const (
-	Habit         TaskType = 0
-	Daily         TaskType = 1
-	Todo          TaskType = 2
-	Reward        TaskType = 3
-	CompletedTodo TaskType = 4
+	HabitType         TaskType = 0
+	DailyType         TaskType = 1
+	TodoType          TaskType = 2
+	RewardType        TaskType = 3
+	CompletedTodoType TaskType = 4
 )
 
 func (tt TaskType) String() string {
@@ -29,14 +34,14 @@ func (tt TaskType) String() string {
 		"reward",
 		"completedTodo",
 	}
-	if tt < Habit || tt > CompletedTodo {
+	if tt < HabitType || tt > CompletedTodoType {
 		return "Unknown"
 	}
 
 	return taskTypes[tt]
 }
 
-func (tt TaskType) AsUrlParam() string {
+func (tt TaskType) asURLParam() string {
 	return "type=" + tt.String() + "s"
 }
 
@@ -55,7 +60,7 @@ func (api *HabiticaAPI) getTasks(tt TaskType) []Task {
 	var tasks []Task
 	url := "/tasks/user"
 	if tt.String() != "Unknown" {
-		url += "?" + tt.AsUrlParam()
+		url += "?" + tt.asURLParam()
 	}
 	err := api.Get(url, &tasks)
 	if err != nil {
@@ -72,7 +77,8 @@ func addOrder(tasks []Task) {
 }
 
 // AddTask will create the task on the server using the
-// task struct as input.
+// task struct as input. Any new task must have a title
+// and type.
 func (api *HabiticaAPI) AddTask(t Task) (Task, error) {
 	isOk, err := isValidTask(t)
 	if !isOk {
@@ -102,8 +108,10 @@ func (api *HabiticaAPI) addTask(t Task) (Task, error) {
 	return t, err
 }
 
-func NewTask(tt TaskType) Task {
+// NewTask creates a new task of a particular Task type.
+func NewTask(title string, tt TaskType) Task {
 	return Task{
-		Type: tt.String(),
+		Title: title,
+		Type:  tt.String(),
 	}
 }

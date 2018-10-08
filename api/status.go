@@ -1,6 +1,6 @@
 package api
 
-// Status will return response from `/status` route of Habitica Api.
+// GetServerStatus will return response from `/status` route of Habitica Api.
 // It will also return errors in either HTTP Protocol or if status
 // code is equal to or above 400.
 func (api *HabiticaAPI) GetServerStatus() (Status, error) {

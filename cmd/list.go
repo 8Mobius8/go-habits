@@ -23,7 +23,7 @@ var listCmd = &cobra.Command{
 // their list of todos currently needing to be completed.
 func List(cmd *cobra.Command, args []string) {
 	apiClient := habitsServer
-	tasks := apiClient.GetTasks(api.Todo)
+	tasks := apiClient.GetTasks(api.TodoType)
 	printTasks(tasks)
 }
 
