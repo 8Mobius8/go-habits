@@ -98,7 +98,6 @@ func isValidTask(t Task) (bool, error) {
 }
 
 func (api *HabiticaAPI) addTask(t Task) (Task, error) {
-	fmt.Println(t)
 	err := api.Post("/tasks/user", t, &t)
 	return t, err
 }

@@ -67,7 +67,7 @@ func parseResponse(body []byte, res *http.Response, object interface{}) error {
 		}
 	}
 
-	if hres.Error != "" {
+	if hres.Error != "" || res.StatusCode >= 400 {
 		return parseHabitsServerError(hres, res)
 	}
 

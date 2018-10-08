@@ -29,7 +29,6 @@ func Add(cmd *cobra.Command, args []string) {
 
 	t := api.NewTask(api.Todo)
 	t.Title = parseTaskTitle(args)
-	fmt.Println(t)
 
 	t, err := client.AddTask(t)
 	if err != nil {
