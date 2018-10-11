@@ -4,11 +4,20 @@ import "fmt"
 
 // Task is a Habitica task.
 type Task struct {
-	Order int
-	Title string   `json:"text"`
-	Tags  []string `json:"tags"`
-	ID    string   `json:"id"`
-	Type  string   `json:"type"`
+	Order     int
+	Title     string   `json:"text"`
+	Tags      []string `json:"tags"`
+	ID        string   `json:"id"`
+	Type      string   `json:"type"`
+	Completed bool     `json:"completed"`
+}
+
+// NewTask creates a new task of a particular Task type.
+func NewTask(title string, tt TaskType) Task {
+	return Task{
+		Title: title,
+		Type:  tt.String(),
+	}
 }
 
 // TaskType is a int representation of the different types of
@@ -108,10 +117,13 @@ func (api *HabiticaAPI) addTask(t Task) (Task, error) {
 	return t, err
 }
 
-// NewTask creates a new task of a particular Task type.
-func NewTask(title string, tt TaskType) Task {
-	return Task{
-		Title: title,
-		Type:  tt.String(),
+// ScoreTaskUp calls api to score a task up. Equvilant to marking the task as
+// completed. This results in a experience, gold, and other reward gain.
+func (api *HabiticaAPI) ScoreTaskUp(t Task) error {
+	empty := struct{}{}
+	if t.ID == "" {
+		return NewGoHabitsError("Task id is empty", 1, "")
 	}
+	err := api.Post("/tasks/"+t.ID+"/score/up", empty, empty)
+	return err
 }

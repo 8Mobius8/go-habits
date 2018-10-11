@@ -22,7 +22,7 @@ test-integration: install
 
 test-watch: install test-docker-start
 	${INTEGRATION_ENV} \
-	ginkgo watch -skipPackage integration ./...
+	ginkgo watch ./...
 
 test-images:
 	docker build -t registry.gitlab.com/8mobius8/go-habits/api -f integration/Dockerfile-habitica .

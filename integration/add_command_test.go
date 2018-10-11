@@ -19,7 +19,7 @@ var _ = Describe("go-habits add command", func() {
 			expectSuccessfulLogin(userName, password)
 		})
 		AfterEach(func() {
-			ResetUser(HABITICA_API, apiID, apiToken)
+			ResetUser(apiID, apiToken)
 			RemoveConfigFile()
 		})
 
