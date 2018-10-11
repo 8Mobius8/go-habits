@@ -146,6 +146,19 @@ const (
 				"updatedAt":"2017-01-11T14:25:32.504Z",
 				"id":"chore-id-1"
 		}}`
+	CompletedTask = `{"success":"true","notifications":[],
+		"data":{
+				"text":"Completed Todo Title",
+				"type":"todo",
+				"tags":["valid", "test"],
+				"value":10,
+				"priority":1,
+				"attribute":"str",
+				"completed": true,
+				"createdAt":"2017-01-07T17:52:09.121Z",
+				"updatedAt":"2017-01-11T14:25:32.504Z",
+				"id":"someId"
+		}}`
 )
 
 var _ = Describe("Tasks", func() {
@@ -164,9 +177,9 @@ var _ = Describe("Tasks", func() {
 	Describe("addOrder", func() {
 		It("returns tasks with Order as given", func() {
 			var tasks = []Task{
-				{0, "Clean Dishes", []string{"tag-guid-1"}, "", "todo"},
-				{0, "Laundry", []string{"tag-guid-1"}, "", "todo"},
-				{0, "Make bed", []string{"tag-guid-1"}, "", "todo"},
+				{Title: "Clean Dishes", Tags: []string{"tag-guid-1"}, Type: "todo"},
+				{Title: "Laundry", Tags: []string{"tag-guid-1"}, Type: "todo"},
+				{Title: "Make bed", Tags: []string{"tag-guid-1"}, Type: "todo"},
 			}
 
 			addOrder(tasks)
@@ -231,6 +244,75 @@ var _ = Describe("Tasks", func() {
 				Entry("a task with out a title", Task{Title: ""}),
 				Entry("a task with an id", Task{ID: "something"}),
 			)
+		})
+	})
+
+	Describe("ScoreTaskUp", func() {
+		Context("given a task with an id", func() {
+			var task Task
+			BeforeEach(func() {
+				task = Task{ID: "someId"}
+			})
+			AfterEach(func() {
+				Expect(len(server.ReceivedRequests())).Should(BeNumerically(">", 0))
+			})
+			Context("and id exists on server", func() {
+				BeforeEach(func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/v3/tasks/"+task.ID+"/score/up"),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/v3/tasks/"+task.ID),
+							ghttp.RespondWith(200, CompletedTask),
+						),
+					)
+				})
+				It("will call the server with correct uri", func() {
+					err := habitapi.ScoreTaskUp(task)
+					Expect(err).ShouldNot(HaveOccurred())
+				})
+				It("the next get on task will return with completed true", func() {
+					err := habitapi.ScoreTaskUp(task)
+					Expect(err).ShouldNot(HaveOccurred())
+
+					err = habitapi.Get("/tasks/"+task.ID, &task)
+					Expect(err).ShouldNot(HaveOccurred())
+
+					Expect(task.Completed).Should(Equal(true))
+				})
+			})
+			Context("and id does not exist on server", func() {
+				It("return with 404 error", func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/v3/tasks/"+task.ID+"/score/up"),
+							ghttp.RespondWith(404, `{
+							"success": false,
+							"error": "NotFound",
+							"message": "Task not found."
+						}`),
+						),
+					)
+
+					err := habitapi.ScoreTaskUp(task)
+					Expect(err).Should(HaveOccurred())
+					goHabitsError := err.(*GoHabitsError)
+					Expect(goHabitsError.Path).Should(Equal("/v3/tasks/" + task.ID + "/score/up"))
+					Expect(goHabitsError.StatusCode).Should(Equal(404))
+					Expect(goHabitsError.Error()).Should(ContainSubstring("Task not found."))
+				})
+			})
+		})
+
+		Context("given a task without an id", func() {
+			It("will return with error saying no id was given", func() {
+				task := Task{}
+				err := habitapi.ScoreTaskUp(task)
+				Expect(err).Should(HaveOccurred())
+				goHabitsError := err.(*GoHabitsError)
+				Expect(goHabitsError.Error()).Should(ContainSubstring("Task id is empty"))
+			})
 		})
 	})
 })
