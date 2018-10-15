@@ -11,12 +11,12 @@ dep:
 dep-clean:
 	rm -rf ./vendor
 
-test:	test-unit test-integration
+test:	install test-docker-start test-unit test-integration
 
 test-unit:
 	go test -v -coverprofile=c.out ./api/... ./cmd/...
 
-test-integration: install test-docker-start
+test-integration: install
 	${INTEGRATION_ENV} \
 	go test -v ./integration/...
 
