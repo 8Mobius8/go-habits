@@ -11,7 +11,7 @@ var _ = Describe("List command", func() {
 		Context("given a task without tags", func() {
 			It("will return a formated string with the values filled in", func() {
 				t := api.Task{}
-				t.ID = randomId()
+				t.ID = randomID()
 				t.Order = 1
 				t.Title = " a simple task I need to complete"
 
@@ -21,7 +21,7 @@ var _ = Describe("List command", func() {
 		Context("given a task with tags", func() {
 			It("will return a formated string with the values filled in", func() {
 				t := api.Task{}
-				t.ID = randomId()
+				t.ID = randomID()
 				t.Order = 1
 				t.Title = " a simple task I need to complete"
 				t.Tags = []string{"misc", "uncategorised"}
