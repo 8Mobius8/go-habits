@@ -21,7 +21,7 @@ var _ = Describe("Add command", func() {
 		})
 		Context("given an id that matches one task", func() {
 			It("should return an array with that task", func() {
-				id := randomId()
+				id := randomID()
 				tasks := generateTasks(3)
 
 				tasks[2].ID = id
@@ -68,14 +68,14 @@ func generateTasks(num int) []api.Task {
 	var tasks []api.Task
 	for i := 0; i < num; i++ {
 		t := api.Task{}
-		t.ID = randomId()
+		t.ID = randomID()
 		t.Title = randomTaskName()
 		tasks = append(tasks, t)
 	}
 	return tasks
 }
 
-func randomId() string {
+func randomID() string {
 	id := randomString(8)
 	id += "-"
 	id += randomString(4)

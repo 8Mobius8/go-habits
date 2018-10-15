@@ -20,6 +20,10 @@ var completeCmd = &cobra.Command{
 	Run:   Complete,
 }
 
+// Complete or `go-habits complete` allows habiters to complete
+// todos on their existing list. `complete` task in a interger
+// number representing the position of the todo they would like
+// to complete.
 func Complete(cmd *cobra.Command, args []string) {
 	client := habitsServer
 	tasks := client.GetTasks(api.TodoType)
