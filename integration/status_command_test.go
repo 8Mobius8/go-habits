@@ -37,13 +37,13 @@ var _ = Describe("go-habits status", func() {
 		It("display Habitica is unreachable status", func() {
 			session := GoHabits("status")
 
-			Eventually(session).Should(gbytes.Say("Habitica is unreachable."))
+			Eventually(session).Should(gbytes.Say("Habitica is unreachable"))
 			Eventually(session).Should(gexec.Exit(5))
 		})
 		It("display Habitica is unreachable status", func() {
 			session := GoHabits("s")
 
-			Eventually(session).Should(gbytes.Say("Habitica is unreachable."))
+			Eventually(session).Should(gbytes.Say("Habitica is unreachable"))
 			Eventually(session).Should(gexec.Exit(5))
 		})
 	})

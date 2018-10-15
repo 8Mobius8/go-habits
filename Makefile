@@ -16,7 +16,7 @@ test:	test-unit test-integration
 test-unit:
 	go test -v -coverprofile=c.out ./api/... ./cmd/...
 
-test-integration: install
+test-integration: install test-docker-start
 	${INTEGRATION_ENV} \
 	go test -v ./integration/...
 
