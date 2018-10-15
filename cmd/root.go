@@ -10,10 +10,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-var habitsServer *api.HabiticaAPI
-var habitsServerURL string
-
 // Version of CLI, is set by go flags
 var Version string
 
@@ -46,14 +42,20 @@ func getAuthConfig() api.UserToken {
 func Execute() {
 	rootCmd.Version = Version
 	if err := rootCmd.Execute(); err != nil {
-		//fmt.Println(err)
-		os.Exit(1)
+		exitCode := 1
+		ghe, ok := err.(*api.GoHabitsError)
+		if ok {
+			fmt.Println(ghe)
+			exitCode = ghe.StatusCode
+		}
+		os.Exit(exitCode)
 	}
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	rootCmd.SetOutput(os.Stdout)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.go-habits.yml)")
 
 	rootCmd.PersistentFlags().StringVarP(&habitsServerURL, "server", "", "http://habitica.com/api", "Set to '/api' uri of desired habits server.")

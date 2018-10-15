@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/viper"
 
@@ -19,22 +18,29 @@ var statusCmd = &cobra.Command{
 	Use:     "status",
 	Short:   "Check if Habitica api is reachable.",
 	Aliases: []string{"s"},
-	Run:     Status,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		out, err := Status()
+		cmd.Println(out)
+		return err
+	},
 }
 
 // Status or `go-habits status` allows habiters to check if the
 // habitica server api is up and running.
-func Status(cmd *cobra.Command, args []string) {
-	fmt.Println("Using " + viper.GetString("server") + " as api server")
-	client := habitsServer
-	res, err := client.GetServerStatus()
+func Status() (string, error) {
+	output := fmt.Sprintln("Using " + viper.GetString("server") + " as api server")
+	res, err := habitsServer.GetServerStatus()
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println(StatusMessage(res))
-		os.Exit(5)
+		output += fmt.Sprintln(err)
+		ghe, ok := err.(*api.GoHabitsError)
+		if ok {
+			ghe.StatusCode = 5
+			err = ghe
+		}
 	}
 
-	fmt.Println(StatusMessage(res))
+	output += fmt.Sprintln(StatusMessage(res))
+	return output, err
 }
 
 // StatusMessage returns text based on Status message

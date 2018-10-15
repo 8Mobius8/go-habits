@@ -40,7 +40,7 @@ func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
 
 	res, err := api.client.Do(req)
 	if err != nil {
-		return err
+		return NewGoHabitsError(err.Error(), 1, "")
 	}
 
 	body := readBody(res)
