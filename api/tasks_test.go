@@ -163,16 +163,18 @@ const (
 
 var _ = Describe("Tasks", func() {
 
-	Describe("GetTasks", func() {
-		Context("when given 'todo' type parameter", func() {
-			It("calls server for todo type tasks for user", func() {
-				server.AppendHandlers(
-					ghttp.VerifyRequest("GET", "/v3/tasks/user", "type=todos"),
-				)
-				habitapi.GetTasks(TodoType)
-			})
-		})
-	})
+	DescribeTable("NewTask will create task with corresponding title and string representaiton of type",
+		func(title string, tt TaskType, taskTypeString string) {
+			task := NewTask(title, tt)
+			Expect(task.Title).Should(BeEquivalentTo(title))
+			Expect(task.Type).Should(Equal(taskTypeString))
+		},
+		Entry("Todo task type", "this is a todo", TodoType, "todo"),
+		Entry("Habit task type", "this is a habit", HabitType, "habit"),
+		Entry("Daily task type", "this is a daily", DailyType, "daily"),
+		Entry("Reward task type", "this is a reward", RewardType, "reward"),
+		Entry("Completed task type", "this is a completed todo", CompletedTodoType, "completedTodo"),
+	)
 
 	Describe("addOrder", func() {
 		It("returns tasks with Order as given", func() {
@@ -244,6 +246,17 @@ var _ = Describe("Tasks", func() {
 				Entry("a task with out a title", Task{Title: ""}),
 				Entry("a task with an id", Task{ID: "something"}),
 			)
+		})
+	})
+
+	Describe("GetTasks", func() {
+		Context("when given 'todo' type parameter", func() {
+			It("calls server for todo type tasks for user", func() {
+				server.AppendHandlers(
+					ghttp.VerifyRequest("GET", "/v3/tasks/user", "type=todos"),
+				)
+				habitapi.GetTasks(TodoType)
+			})
 		})
 	})
 
