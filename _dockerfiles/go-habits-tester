@@ -6,6 +6,11 @@ WORKDIR $GOPATH/src/github.com/8Mobius8/go-habits
 COPY Gopkg.toml Gopkg.lock ./
 RUN dep ensure -v -vendor-only
 
+RUN curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter \
+    && chmod +x ./cc-test-reporter
+
 COPY . ./
 
-CMD ./integration/wait-for-habitica-api.sh make test-integration
+RUN make build
+
+CMD make install
