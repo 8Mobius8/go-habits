@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-cmd="$@"
 date_to_wait_until=$(date -d "+1mins" +%s)
 echo "Waiting Habitica API to be up @ $SERVER"
 until curl -s $SERVER > /dev/null 2>&1; do
@@ -15,5 +14,4 @@ until curl -s $SERVER > /dev/null 2>&1; do
 done
 
 echo
->&2 echo "Habitica API is up at starting running '$cmd'"
-exec $cmd
+>&2 echo "Habitica API is up!"
