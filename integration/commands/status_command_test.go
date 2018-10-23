@@ -26,13 +26,13 @@ var _ = Describe("go-habits status", func() {
 		})
 	})
 	Context("when Habitica api is NOT reachabled", func() {
-		var serverUri string
+		var serverURI string
 		BeforeEach(func() {
-			serverUri = os.Getenv("SERVER")
+			serverURI = os.Getenv("SERVER")
 			os.Setenv("SERVER", "http://notaccessible/api")
 		})
 		AfterEach(func() {
-			os.Setenv("SERVER", serverUri)
+			os.Setenv("SERVER", serverURI)
 		})
 
 		It("display Habitica is unreachable status", func() {

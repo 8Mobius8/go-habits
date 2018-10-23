@@ -1,5 +1,0 @@
-auth:
-  local:
-    apitoken: 76fa5ef5-a8dc-4f9a-a9b5-457857b940c9
-    id: 9be2d243-a082-4e5d-9927-044e27ebd76f
-server: http://localhost:3000/api

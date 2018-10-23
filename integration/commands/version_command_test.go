@@ -13,7 +13,7 @@ var _ = Describe("go-habits version", func() {
 		session := GoHabits("version")
 
 		Eventually(session).Should(gbytes.Say(
-			`go-habits version ` + BUILD_VERSION,
+			`go-habits version ` + BuildVersion,
 		))
 		Eventually(session).Should(gexec.Exit(0))
 	})
@@ -21,7 +21,7 @@ var _ = Describe("go-habits version", func() {
 		session := GoHabits("--version")
 
 		Eventually(session).Should(gbytes.Say(
-			`go-habits version ` + BUILD_VERSION,
+			`go-habits version ` + BuildVersion,
 		))
 		Eventually(session).Should(gexec.Exit(0))
 	})

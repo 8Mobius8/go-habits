@@ -17,13 +17,14 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
+// Global variables for all integration tests
 var (
-	HABITICA_API  string
-	BUILD_VERSION string
-	ApiClient     *api.HabiticaAPI
-	ApiToken      string
-	ApiID         string
-	command       *exec.Cmd
+	HabiticaAPIURI string
+	BuildVersion   string
+	APIClient      *api.HabiticaAPI
+	APIToken       string
+	APIID          string
+	command        *exec.Cmd
 )
 
 // GoHabitsWithStdin builds session and stdin writer for invoking
@@ -47,7 +48,7 @@ func GoHabits(args ...string) *gexec.Session {
 }
 
 // RegisterUser uses habitica api to register a new user
-func RegisterUser(serverUri, username, password, email string) {
+func RegisterUser(serverURI, username, password, email string) {
 	registerUserBody := struct {
 		Username        string `json:"username"`
 		Password        string `json:"password"`
@@ -64,43 +65,45 @@ func RegisterUser(serverUri, username, password, email string) {
 		Ω(merr).ShouldNot(HaveOccurred())
 	}
 
-	res, err := http.Post(serverUri+"/v3/user/auth/local/register", "application/json", bytes.NewBuffer(data))
+	res, err := http.Post(serverURI+"/v3/user/auth/local/register", "application/json", bytes.NewBuffer(data))
 	Ω(err).ShouldNot(HaveOccurred())
 	Ω(res.StatusCode).ShouldNot(BeNumerically(">=", 300))
 }
 
 // GetAPIToken returns habitica api token and id
-func GetAPIToken(serverUri, username, password string) (token, id string) {
-	creds := ApiClient.Authenticate(username, password)
+func GetAPIToken(serverURI, username, password string) (token, id string) {
+	creds := APIClient.Authenticate(username, password)
 	return creds.APIToken, creds.ID
 }
 
 // SaveAPIToken saves habitica api token and id to integration package
 // variables
-func SaveAPIToken(serverUri, username, password string) {
-	token, id := GetAPIToken(serverUri, username, password)
-	ApiToken = token
-	ApiID = id
+func SaveAPIToken(serverURI, username, password string) {
+	token, id := GetAPIToken(serverURI, username, password)
+	APIToken = token
+	APIID = id
 }
 
 // DeleteUser removes a user from habitica using api
-func DeleteUser(serverUri, username, password, feedback string) {
+func DeleteUser(serverURI, username, password, feedback string) {
 	payload := `{"password":"` + password + `","feedback":"` + feedback + `"}`
-	req, err := http.NewRequest("DELETE", serverUri+"/v3/user", bytes.NewBuffer([]byte(payload)))
+	req, err := http.NewRequest("DELETE", serverURI+"/v3/user", bytes.NewBuffer([]byte(payload)))
 	Ω(err).ShouldNot(HaveOccurred())
-	err = ApiClient.Do(req, nil)
+	err = APIClient.Do(req, nil)
 	Ω(err).ShouldNot(HaveOccurred())
 }
 
 // ResetUser leaves auth and api token but removes all data from their account.
-func ResetUser(userId, token string) {
+func ResetUser() {
 	payload := ""
-	req, err := http.NewRequest("POST", HABITICA_API+"/v3/user/reset", bytes.NewBuffer([]byte(payload)))
+	req, err := http.NewRequest("POST", HabiticaAPIURI+"/v3/user/reset", bytes.NewBuffer([]byte(payload)))
 	Ω(err).ShouldNot(HaveOccurred())
-	err = ApiClient.Do(req, nil)
+	err = APIClient.Do(req, nil)
 	Ω(err).ShouldNot(HaveOccurred())
 }
 
+// EventuallyLogin takes an existing session, waits to be prompted username
+// and pasword, and writes the username and password to stdin.
 func EventuallyLogin(session *gexec.Session, in io.WriteCloser, username, password string) {
 	Eventually(session).Should(gbytes.Say("Username:"))
 	in.Write([]byte(username + "\n"))
@@ -109,15 +112,19 @@ func EventuallyLogin(session *gexec.Session, in io.WriteCloser, username, passwo
 	in.Write([]byte(password + "\n"))
 }
 
+// TouchConfigFile gets the User's config file path and writes
+// a new line to it.
 func TouchConfigFile() string {
 	path := GetUserConfigPath()
 
-	err := ioutil.WriteFile(path, []byte("test"), 0644)
+	err := ioutil.WriteFile(path, []byte("\n"), 0644)
 	Expect(err).ShouldNot(HaveOccurred())
 
 	return path
 }
 
+// RemoveConfigFile tries to remove the User's config file.
+// It returns safely of the file doesn't exist.
 func RemoveConfigFile() {
 	path := GetUserConfigPath()
 
@@ -130,6 +137,7 @@ func RemoveConfigFile() {
 	Expect(err).ShouldNot(HaveOccurred())
 }
 
+// GetUserConfigPath returns the default path for a users config file.
 func GetUserConfigPath() string {
 	userHomePath, err := homedir.Dir()
 	Expect(err).ShouldNot(HaveOccurred())

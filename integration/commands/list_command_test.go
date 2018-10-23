@@ -34,7 +34,7 @@ var _ = Describe("go-habits list", func() {
 		It("lists a task with it's tag", func() {
 			task := addTask("Clean the bed")
 			tag := addTag("chores")
-			addTagToTask(task.Id, tag.Id)
+			addTagToTask(task.ID, tag.ID)
 
 			session := GoHabits("list")
 			Eventually(session).Should(gbytes.Say("Clean the bed"))
@@ -50,21 +50,21 @@ type Task struct {
 }
 
 type TaskResponse struct {
-	Id   string
+	ID   string
 	Text string
 }
 
 func addTask(taskTitle string) TaskResponse {
 	todoTask := Task{taskTitle, "todo"}
 	var res TaskResponse
-	err := ApiClient.Post("/tasks/user", todoTask, &res)
+	err := APIClient.Post("/tasks/user", todoTask, &res)
 	Expect(err).ShouldNot(HaveOccurred())
 	return res
 }
 
 type Tag struct {
 	Name string `json:"name"`
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 }
 
 func addTag(tagTitle string) Tag {
@@ -72,14 +72,14 @@ func addTag(tagTitle string) Tag {
 		Name string `json:"name"`
 	}{Name: tagTitle}
 	var tagResponse Tag
-	err := ApiClient.Post("/tags", tagInput, &tagResponse)
+	err := APIClient.Post("/tags", tagInput, &tagResponse)
 	Expect(err).ShouldNot(HaveOccurred())
 	return tagResponse
 }
 
-func addTagToTask(taskId, tagId string) {
+func addTagToTask(taskID, tagID string) {
 	var e struct{}
-	err := ApiClient.Post("/tasks/"+taskId+"/tags/"+tagId, e, e)
+	err := APIClient.Post("/tasks/"+taskID+"/tags/"+tagID, e, e)
 	Expect(err).ShouldNot(HaveOccurred())
 }
 
