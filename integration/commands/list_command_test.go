@@ -1,6 +1,7 @@
-package integration
+package commands
 
 import (
+	. "github.com/8Mobius8/go-habits/integration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -18,7 +19,7 @@ var _ = Describe("go-habits list", func() {
 
 		BeforeEach(func() {
 			TouchConfigFile()
-			expectSuccessfulLogin(userName, password)
+			expectSuccessfulLogin(UserName, Password)
 		})
 		AfterEach(func() {
 			RemoveConfigFile()
@@ -56,7 +57,7 @@ type TaskResponse struct {
 func addTask(taskTitle string) TaskResponse {
 	todoTask := Task{taskTitle, "todo"}
 	var res TaskResponse
-	err := apiClient.Post("/tasks/user", todoTask, &res)
+	err := ApiClient.Post("/tasks/user", todoTask, &res)
 	Expect(err).ShouldNot(HaveOccurred())
 	return res
 }
@@ -71,19 +72,20 @@ func addTag(tagTitle string) Tag {
 		Name string `json:"name"`
 	}{Name: tagTitle}
 	var tagResponse Tag
-	err := apiClient.Post("/tags", tagInput, &tagResponse)
+	err := ApiClient.Post("/tags", tagInput, &tagResponse)
 	Expect(err).ShouldNot(HaveOccurred())
 	return tagResponse
 }
 
 func addTagToTask(taskId, tagId string) {
 	var e struct{}
-	err := apiClient.Post("/tasks/"+taskId+"/tags/"+tagId, e, e)
+	err := ApiClient.Post("/tasks/"+taskId+"/tags/"+tagId, e, e)
 	Expect(err).ShouldNot(HaveOccurred())
 }
 
 func expectSuccessfulLogin(user, password string) {
 	s, in := GoHabitsWithStdin("login")
+	defer in.Close()
 	EventuallyLogin(s, in, user, password)
 	Eventually(s).Should(gexec.Exit(0))
 }

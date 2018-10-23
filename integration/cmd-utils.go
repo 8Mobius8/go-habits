@@ -2,52 +2,29 @@ package integration
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
-	"testing"
 
 	"github.com/8Mobius8/go-habits/api"
+	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 )
-
-func TestIntegration(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Integration Suite")
-}
 
 var (
 	HABITICA_API  string
 	BUILD_VERSION string
-	apiClient     *api.HabiticaAPI
-	apiToken      string
-	apiID         string
+	ApiClient     *api.HabiticaAPI
+	ApiToken      string
+	ApiID         string
+	command       *exec.Cmd
 )
-
-// Global go-habits command
-var command *exec.Cmd
-
-var _ = BeforeSuite(func() {
-	var exists bool
-	HABITICA_API, exists = os.LookupEnv("SERVER")
-	Ω(exists).ShouldNot(BeFalse())
-	Ω(HABITICA_API).ShouldNot(BeEmpty())
-
-	BUILD_VERSION, exists = os.LookupEnv("BUILD_VERSION")
-	Ω(exists).ShouldNot(BeFalse())
-	Ω(BUILD_VERSION).ShouldNot(BeEmpty())
-
-	apiClient = api.NewHabiticaAPI(nil, HABITICA_API)
-	RegisterUser(HABITICA_API, userName, password, email)
-	SaveAPIToken(HABITICA_API, userName, password)
-})
-
-var _ = AfterSuite(func() {
-	DeleteUser(HABITICA_API, userName, password, "go-habits integration test")
-})
 
 // GoHabitsWithStdin builds session and stdin writer for invoking
 // commands go-habits. go-habits must be install in PATH
@@ -71,7 +48,7 @@ func GoHabits(args ...string) *gexec.Session {
 
 // RegisterUser uses habitica api to register a new user
 func RegisterUser(serverUri, username, password, email string) {
-	payload := struct {
+	registerUserBody := struct {
 		Username        string `json:"username"`
 		Password        string `json:"password"`
 		Email           string `json:"email"`
@@ -82,17 +59,28 @@ func RegisterUser(serverUri, username, password, email string) {
 		email,
 		password,
 	}
+	data, merr := json.Marshal(registerUserBody)
+	if merr != nil {
+		Ω(merr).ShouldNot(HaveOccurred())
+	}
 
-	err := apiClient.Post("/user/auth/local/register", &payload, nil)
+	res, err := http.Post(serverUri+"/v3/user/auth/local/register", "application/json", bytes.NewBuffer(data))
 	Ω(err).ShouldNot(HaveOccurred())
+	Ω(res.StatusCode).ShouldNot(BeNumerically(">=", 300))
+}
+
+// GetAPIToken returns habitica api token and id
+func GetAPIToken(serverUri, username, password string) (token, id string) {
+	creds := ApiClient.Authenticate(username, password)
+	return creds.APIToken, creds.ID
 }
 
 // SaveAPIToken saves habitica api token and id to integration package
 // variables
 func SaveAPIToken(serverUri, username, password string) {
-	creds := apiClient.Authenticate(username, password)
-	apiToken = creds.APIToken
-	apiID = creds.ID
+	token, id := GetAPIToken(serverUri, username, password)
+	ApiToken = token
+	ApiID = id
 }
 
 // DeleteUser removes a user from habitica using api
@@ -100,7 +88,7 @@ func DeleteUser(serverUri, username, password, feedback string) {
 	payload := `{"password":"` + password + `","feedback":"` + feedback + `"}`
 	req, err := http.NewRequest("DELETE", serverUri+"/v3/user", bytes.NewBuffer([]byte(payload)))
 	Ω(err).ShouldNot(HaveOccurred())
-	err = apiClient.Do(req, nil)
+	err = ApiClient.Do(req, nil)
 	Ω(err).ShouldNot(HaveOccurred())
 }
 
@@ -109,6 +97,41 @@ func ResetUser(userId, token string) {
 	payload := ""
 	req, err := http.NewRequest("POST", HABITICA_API+"/v3/user/reset", bytes.NewBuffer([]byte(payload)))
 	Ω(err).ShouldNot(HaveOccurred())
-	err = apiClient.Do(req, nil)
+	err = ApiClient.Do(req, nil)
 	Ω(err).ShouldNot(HaveOccurred())
+}
+
+func EventuallyLogin(session *gexec.Session, in io.WriteCloser, username, password string) {
+	Eventually(session).Should(gbytes.Say("Username:"))
+	in.Write([]byte(username + "\n"))
+
+	Eventually(session).Should(gbytes.Say("Password:"))
+	in.Write([]byte(password + "\n"))
+}
+
+func TouchConfigFile() string {
+	path := GetUserConfigPath()
+
+	err := ioutil.WriteFile(path, []byte("test"), 0644)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	return path
+}
+
+func RemoveConfigFile() {
+	path := GetUserConfigPath()
+
+	err := os.Remove(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return
+		}
+	}
+	Expect(err).ShouldNot(HaveOccurred())
+}
+
+func GetUserConfigPath() string {
+	userHomePath, err := homedir.Dir()
+	Expect(err).ShouldNot(HaveOccurred())
+	return userHomePath + "/.go-habits.yml"
 }

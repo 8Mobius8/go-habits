@@ -53,6 +53,7 @@ func Complete(ts tasksServer, args []string) (string, error) {
 		err = api.NewGoHabitsError(err.Error(), 1, "")
 		return err.Error(), err
 	}
+	t.Completed = true
 	return formatTask(t), nil
 }
 

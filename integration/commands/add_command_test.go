@@ -1,6 +1,7 @@
-package integration
+package commands
 
 import (
+	. "github.com/8Mobius8/go-habits/integration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -16,10 +17,10 @@ var _ = Describe("go-habits add command", func() {
 	Context("Given the user is already signed-in", func() {
 		BeforeEach(func() {
 			TouchConfigFile()
-			expectSuccessfulLogin(userName, password)
+			expectSuccessfulLogin(UserName, Password)
 		})
 		AfterEach(func() {
-			ResetUser(apiID, apiToken)
+			ResetUser(ApiID, ApiToken)
 			RemoveConfigFile()
 		})
 

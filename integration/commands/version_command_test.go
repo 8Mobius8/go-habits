@@ -1,6 +1,7 @@
-package integration
+package commands
 
 import (
+	. "github.com/8Mobius8/go-habits/integration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"

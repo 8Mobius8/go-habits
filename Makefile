@@ -40,7 +40,7 @@ endif
 
 test-integration: install
 	${INTEGRATION_ENV} ./integration/wait-for-habitica-api.sh
-	${INTEGRATION_ENV} go test -v ./integration/...
+	${INTEGRATION_ENV} ginkgo -r --trace --progress ./integration
 
 test-clean:
 	docker-compose down -v -t 0
@@ -49,7 +49,10 @@ test-clean:
 install:
 	go install ${LDFLAGS}
 
-dev: install
+dev-format:
+	gofmt -d -w main.go ./api ./cmd ./integration
+
+dev: dev-format install
 	docker-compose up -d habitica
 	${INTEGRATION_ENV} ginkgo watch ./...
 
