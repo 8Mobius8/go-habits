@@ -1,7 +1,8 @@
-package integration
+package commands
 
 import (
 	"github.com/8Mobius8/go-habits/api"
+	. "github.com/8Mobius8/go-habits/integration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -11,10 +12,10 @@ import (
 var _ = Describe("go-habits complete command", func() {
 	BeforeEach(func() {
 		TouchConfigFile()
-		expectSuccessfulLogin(userName, password)
+		expectSuccessfulLogin(UserName, Password)
 	})
 	AfterEach(func() {
-		ResetUser(apiID, apiToken)
+		ResetUser(ApiID, ApiToken)
 		RemoveConfigFile()
 	})
 	It("exits safely when showing usage", func() {
@@ -28,12 +29,13 @@ var _ = Describe("go-habits complete command", func() {
 			var task api.Task
 			BeforeEach(func() {
 				task = api.NewTask("A Task to complete", api.TodoType)
-				t, err := apiClient.AddTask(task)
+				t, err := ApiClient.AddTask(task)
 				task = t
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 			It("will print task completed", func() {
 				s := GoHabits("complete", "1")
+				Eventually(s).Should(gbytes.Say("[X]"))
 				Eventually(s).Should(gbytes.Say(task.Title))
 				Eventually(s).Should(gexec.Exit(0))
 			})
@@ -42,7 +44,7 @@ var _ = Describe("go-habits complete command", func() {
 				Eventually(s).Should(gexec.Exit(0))
 
 				t := api.Task{}
-				err := apiClient.Get("/tasks/"+task.ID, &t)
+				err := ApiClient.Get("/tasks/"+task.ID, &t)
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(t.Completed).Should(Equal(true))

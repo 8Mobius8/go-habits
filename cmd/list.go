@@ -34,7 +34,11 @@ func printTasks(tasks []api.Task) {
 }
 
 func formatTask(t api.Task) string {
-	s := fmt.Sprintf("%d[ ] %s ", t.Order, t.Title)
+	completedString := "[ ]"
+	if t.Completed {
+		completedString = "[X]"
+	}
+	s := fmt.Sprintf("%d%s %s ", t.Order, completedString, t.Title)
 	for _, tag := range t.Tags {
 		s += fmt.Sprintf(" #%s", tag)
 	}

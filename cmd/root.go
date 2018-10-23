@@ -45,7 +45,7 @@ func Execute() {
 		exitCode := 1
 		ghe, ok := err.(*api.GoHabitsError)
 		if ok {
-			fmt.Println(ghe)
+			rootCmd.Print(ghe)
 			exitCode = ghe.StatusCode
 		}
 		os.Exit(exitCode)
