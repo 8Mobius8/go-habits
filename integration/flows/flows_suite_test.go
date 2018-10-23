@@ -17,13 +17,13 @@ func TestIntegration(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	var exists bool
-	HABITICA_API, exists = os.LookupEnv("SERVER")
+	HabiticaAPIURI, exists = os.LookupEnv("SERVER")
 	Ω(exists).ShouldNot(BeFalse())
-	Ω(HABITICA_API).ShouldNot(BeEmpty())
+	Ω(HabiticaAPIURI).ShouldNot(BeEmpty())
 
-	BUILD_VERSION, exists = os.LookupEnv("BUILD_VERSION")
+	BuildVersion, exists = os.LookupEnv("BUILD_VERSION")
 	Ω(exists).ShouldNot(BeFalse())
-	Ω(BUILD_VERSION).ShouldNot(BeEmpty())
+	Ω(BuildVersion).ShouldNot(BeEmpty())
 
-	ApiClient = api.NewHabiticaAPI(nil, HABITICA_API)
+	APIClient = api.NewHabiticaAPI(nil, HabiticaAPIURI)
 })

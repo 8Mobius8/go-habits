@@ -15,7 +15,7 @@ var _ = Describe("go-habits complete command", func() {
 		expectSuccessfulLogin(UserName, Password)
 	})
 	AfterEach(func() {
-		ResetUser(ApiID, ApiToken)
+		ResetUser()
 		RemoveConfigFile()
 	})
 	It("exits safely when showing usage", func() {
@@ -29,7 +29,7 @@ var _ = Describe("go-habits complete command", func() {
 			var task api.Task
 			BeforeEach(func() {
 				task = api.NewTask("A Task to complete", api.TodoType)
-				t, err := ApiClient.AddTask(task)
+				t, err := APIClient.AddTask(task)
 				task = t
 				Expect(err).ShouldNot(HaveOccurred())
 			})
@@ -44,7 +44,7 @@ var _ = Describe("go-habits complete command", func() {
 				Eventually(s).Should(gexec.Exit(0))
 
 				t := api.Task{}
-				err := ApiClient.Get("/tasks/"+task.ID, &t)
+				err := APIClient.Get("/tasks/"+task.ID, &t)
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(t.Completed).Should(Equal(true))

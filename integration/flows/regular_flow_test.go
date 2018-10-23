@@ -29,8 +29,8 @@ var _ = Describe("CLI User usage flows", func() {
 		RemoveConfigFile()
 	})
 	AfterEach(func() {
-		SaveAPIToken(HABITICA_API, RegularFlow.username, RegularFlow.password)
-		DeleteUser(HABITICA_API, RegularFlow.username, RegularFlow.password, "test")
+		SaveAPIToken(HabiticaAPIURI, RegularFlow.username, RegularFlow.password)
+		DeleteUser(HabiticaAPIURI, RegularFlow.username, RegularFlow.password, "test")
 		RemoveConfigFile()
 	})
 	It("A typical first usage", func() {
@@ -50,7 +50,7 @@ var _ = Describe("CLI User usage flows", func() {
 		Eventually(s).Should(gexec.Exit(0))
 
 		// CLI user will have made an account on habitica ui.
-		RegisterUser(HABITICA_API, RegularFlow.username, RegularFlow.password, RegularFlow.email)
+		RegisterUser(HabiticaAPIURI, RegularFlow.username, RegularFlow.password, RegularFlow.email)
 
 		// CLI user will run login, pass-in their username and password
 		// and CLI will say login successful and config file has been updated

@@ -27,7 +27,7 @@ var _ = Describe("go-habits login", func() {
 			defer in.Close()
 			EventuallyLogin(s, in, UserName, Password)
 			Eventually(s).Should(gexec.Exit(0))
-			b, err := ioutil.ReadFile("./login-test-config.yml")
+			b, err := ioutil.ReadFile(GetUserConfigPath())
 			Expect(err).ToNot(HaveOccurred())
 			fmt.Fprintln(GinkgoWriter, "\nConfig file contents:")
 			fmt.Fprintln(GinkgoWriter, string(b))

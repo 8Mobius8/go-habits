@@ -9,9 +9,9 @@ var cfgFile string
 var habitsServer *api.HabiticaAPI
 var habitsServerURL string
 
-var DefaultGoHabitsConfigPath string
+var defaultGoHabitsConfigPath string
 
 func init() {
 	userHomePath, _ := homedir.Dir()
-	DefaultGoHabitsConfigPath = userHomePath + "/.go-habits.yml"
+	defaultGoHabitsConfigPath = userHomePath + "/.go-habits.yml"
 }

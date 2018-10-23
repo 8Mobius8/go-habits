@@ -52,9 +52,9 @@ func setAuthConfig(creds api.UserToken) {
 
 func saveToConfigFile() error {
 	if viper.ConfigFileUsed() == "" {
-		fmt.Println("Didn't find config file. Creating a new config file at " + DefaultGoHabitsConfigPath)
-		touchConfigFile(DefaultGoHabitsConfigPath)
-		viper.SetConfigFile(DefaultGoHabitsConfigPath)
+		fmt.Println("Didn't find config file. Creating a new config file at " + defaultGoHabitsConfigPath)
+		touchConfigFile(defaultGoHabitsConfigPath)
+		viper.SetConfigFile(defaultGoHabitsConfigPath)
 	}
 	fmt.Printf("Updating config at %s\n", viper.ConfigFileUsed())
 	return viper.WriteConfig()
