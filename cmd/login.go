@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
+	"os"
 
 	api "github.com/8Mobius8/go-habits/api"
 	"github.com/spf13/cobra"
@@ -18,30 +20,32 @@ var loginCmd = &cobra.Command{
 	Short: "Authenicates with Habits server and saves api token in config file.",
 	Long: "Authenicates with Habits server and saves api token in config file.\n" +
 		"You will need create an account on https://habitica.com",
-	Run: Login,
+	Run: func(cmd *cobra.Command, args []string) {
+		Login(os.Stdin, cmd.OutOrStdout(), habitsServer, args)
+	},
+}
+
+type authServer interface {
+	Authenticate(string, string) api.UserToken
 }
 
 // Login or `go-habits login` allows habiters to logon to a
 // habitica server and save their api id and token to a config
 // file. The file must be previously created.
-func Login(cmd *cobra.Command, args []string) {
-	client := habitsServer
-	user := scanForUserCreds()
-	creds := client.Authenticate(user.UserName, user.Password)
-	cmd.Println("Login Successful <3")
+func Login(in io.Reader, out io.Writer, as authServer, args []string) {
+	user := scanForUserCreds(in, out)
+	creds := as.Authenticate(user.UserName, user.Password)
+	fmt.Fprintln(out, "Login Successful <3")
 	setAuthConfig(creds)
-	err := saveToConfigFile()
-	if err != nil {
-		cmd.Println(err)
-	}
+	saveToConfigFile(out)
 }
 
-func scanForUserCreds() api.UserToken {
+func scanForUserCreds(in io.Reader, out io.Writer) api.UserToken {
 	var user api.UserToken
-	fmt.Print("Username:")
-	fmt.Scanln(&user.UserName)
-	fmt.Print("Password:")
-	fmt.Scanln(&user.Password)
+	fmt.Fprint(out, "Username:")
+	fmt.Fscanln(in, &user.UserName)
+	fmt.Fprint(out, "Password:")
+	fmt.Fscanln(in, &user.Password)
 	return user
 }
 
@@ -50,14 +54,14 @@ func setAuthConfig(creds api.UserToken) {
 	viper.Set("auth.local.apitoken", creds.APIToken)
 }
 
-func saveToConfigFile() error {
+func saveToConfigFile(out io.Writer) {
 	if viper.ConfigFileUsed() == "" {
-		fmt.Println("Didn't find config file. Creating a new config file at " + defaultGoHabitsConfigPath)
+		fmt.Fprintln(out, "Didn't find config file. Creating a new config file at "+defaultGoHabitsConfigPath)
 		touchConfigFile(defaultGoHabitsConfigPath)
 		viper.SetConfigFile(defaultGoHabitsConfigPath)
 	}
-	fmt.Printf("Updating config at %s\n", viper.ConfigFileUsed())
-	return viper.WriteConfig()
+	fmt.Fprintf(out, "Updating config at %s\n", viper.ConfigFileUsed())
+	viper.WriteConfig()
 }
 
 func touchConfigFile(configPath string) error {
