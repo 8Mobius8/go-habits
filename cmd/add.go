@@ -27,8 +27,7 @@ var addCmd = &cobra.Command{
 func Add(cmd *cobra.Command, args []string) {
 	client := habitsServer
 
-	title := parseTaskTitle(args)
-	t := api.NewTask(title, api.TodoType)
+	t := ParseTask(args)
 
 	t, err := client.AddTask(t)
 	if err != nil {
@@ -58,7 +57,8 @@ func parseTaskTitle(args []string) string {
 	return title
 }
 
-func parseTask(args []string) api.Task {
+// ParseTask parses an api.Task from []string
+func ParseTask(args []string) api.Task {
 	var titleArgs, tagsArgs []string
 
 	for _, arg := range args {
@@ -69,9 +69,8 @@ func parseTask(args []string) api.Task {
 		}
 	}
 
-	t := api.Task{}
+	t := api.NewTask(parseTaskTitle(titleArgs), api.TodoType)
 	t.Tags = parseTags(tagsArgs)
-	t.Title = parseTaskTitle(titleArgs)
 	return t
 }
 

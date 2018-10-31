@@ -39,6 +39,13 @@ var _ = Describe("go-habits add command", func() {
 				Eventually(s).Should(gbytes.Say("make bed"))
 				Eventually(s).Should(gexec.Exit(0))
 			})
+
+			It("will print new tasks with tags in order as confirmation", func() {
+				s := GoHabits("add", "clean my fishbowl #chores")
+				Eventually(s).Should(gbytes.Say("1"))
+				Eventually(s).Should(gbytes.Say("clean my fishbowl #chores"))
+				Eventually(s).Should(gexec.Exit(0))
+			})
 		})
 	})
 })
