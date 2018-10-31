@@ -10,7 +10,6 @@ import (
 	"os/exec"
 
 	"github.com/8Mobius8/go-habits/api"
-	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -30,6 +29,7 @@ var (
 // GoHabitsWithStdin builds session and stdin writer for invoking
 // commands go-habits. go-habits must be install in PATH
 func GoHabitsWithStdin(args ...string) (*gexec.Session, io.WriteCloser) {
+	args = prependConfigArg(args...)
 	command := exec.Command(GOHABITS, args...)
 	stdin, err := command.StdinPipe()
 	Ω(err).ShouldNot(HaveOccurred())
@@ -41,6 +41,7 @@ func GoHabitsWithStdin(args ...string) (*gexec.Session, io.WriteCloser) {
 // GoHabits builds session for invoking commands go-habits.
 // The go-habits binary must be install in PATH.
 func GoHabits(args ...string) *gexec.Session {
+	args = prependConfigArg(args...)
 	command := exec.Command(GOHABITS, args...)
 	session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 	Ω(err).ShouldNot(HaveOccurred())
@@ -139,7 +140,10 @@ func RemoveConfigFile() {
 
 // GetUserConfigPath returns the default path for a users config file.
 func GetUserConfigPath() string {
-	userHomePath, err := homedir.Dir()
-	Expect(err).ShouldNot(HaveOccurred())
-	return userHomePath + "/.go-habits.yml"
+	return ".go-habits.yml"
+}
+
+func prependConfigArg(args ...string) []string {
+	configArgs := []string{"--config", GetUserConfigPath()}
+	return append(configArgs, args...)
 }

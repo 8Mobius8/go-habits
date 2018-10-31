@@ -56,12 +56,18 @@ func setAuthConfig(creds api.UserToken) {
 
 func saveToConfigFile(out io.Writer) {
 	if viper.ConfigFileUsed() == "" {
-		fmt.Fprintln(out, "Didn't find config file. Creating a new config file at "+defaultGoHabitsConfigPath)
-		touchConfigFile(defaultGoHabitsConfigPath)
 		viper.SetConfigFile(defaultGoHabitsConfigPath)
 	}
-	fmt.Fprintf(out, "Updating config at %s\n", viper.ConfigFileUsed())
+
+	_, err := os.Stat(viper.ConfigFileUsed())
 	viper.WriteConfig()
+	if !os.IsNotExist(err) {
+		fmt.Fprintf(out, "Overridden config at %s\n", viper.ConfigFileUsed())
+	}
+	if os.IsNotExist(err) {
+		fmt.Fprintln(out, "Didn't find config file.")
+		fmt.Fprintf(out, "Created a new config file at %s\n", viper.ConfigFileUsed())
+	}
 }
 
 func touchConfigFile(configPath string) error {

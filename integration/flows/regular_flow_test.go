@@ -59,7 +59,7 @@ var _ = Describe("CLI User usage flows", func() {
 		Eventually(s).Should(Say(`Login Successful`))
 		// CLI user will run login and see that a config file was created for them.
 		Eventually(s).Should(Say(`Didn't find config file`))
-		Eventually(s).Should(Say(`Creating a new config file at .*\.go-habits`))
+		Eventually(s).Should(Say(`Created a new config file at .*\.go-habits`))
 		Eventually(s).Should(gexec.Exit(0))
 		in.Close()
 
