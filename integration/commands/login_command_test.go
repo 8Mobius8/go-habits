@@ -19,7 +19,8 @@ var _ = Describe("go-habits login", func() {
 
 			EventuallyLogin(s, in, UserName, Password)
 
-			Eventually(s).Should(gbytes.Say(`Didn't find config file. Creating a new config file at .*\.go-habits.yml`))
+			Eventually(s).Should(gbytes.Say(`Didn't find config file.`))
+			Eventually(s).Should(gbytes.Say(`Created a new config file at .*\.go-habits.yml`))
 			Eventually(s).Should(gexec.Exit(0))
 		})
 		It("has created a new config file with keys in it", func() {
@@ -51,7 +52,7 @@ var _ = Describe("go-habits login", func() {
 
 			EventuallyLogin(s, in, UserName, Password)
 
-			Eventually(s).Should(gbytes.Say("Updating config at"))
+			Eventually(s).Should(gbytes.Say("Overridden config at"))
 			Eventually(s).Should(gexec.Exit(0))
 
 			data, err := ioutil.ReadFile(configPath)

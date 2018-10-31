@@ -1,6 +1,7 @@
 .vscode
 
 go-habits
+.go-habits.yml
 
 *coverprofile
 *.cov

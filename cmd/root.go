@@ -58,7 +58,7 @@ func init() {
 	rootCmd.SetOutput(os.Stdout)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.go-habits.yml)")
 
-	rootCmd.PersistentFlags().StringVarP(&habitsServerURL, "server", "", "http://habitica.com/api", "Set to '/api' uri of desired habits server.")
+	rootCmd.PersistentFlags().StringVar(&habitsServerURL, "server", "http://habitica.com/api", "Set to '/api' uri of desired habits server.")
 	viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))
 }
 
