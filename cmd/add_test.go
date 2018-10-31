@@ -6,6 +6,7 @@ import (
 
 	api "github.com/8Mobius8/go-habits/api"
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 )
 
@@ -55,12 +56,35 @@ var _ = Describe("Add command", func() {
 		Context("given words and tags as arguments", func() {
 			It("should return with title and tags set", func() {
 				args := []string{"eat", "breakfast", "#health"}
-				task := parseTask(args)
+				task := ParseTask(args)
 
 				Expect(task.Title).To(MatchRegexp(strings.Join(args[0:2], " ")))
 				Expect(task.Tags).To(ContainElement("health"))
 			})
 		})
+	})
+
+	Describe("ParseTask", func() {
+
+		DescribeTable("should return a task with it's title set",
+			func(args []string, expectedTitle string) {
+				task := ParseTask(args)
+				Expect(task).To(Equal(api.Task{Title: expectedTitle, Type: api.TodoType.String()}))
+			},
+			Entry("when given a single word", []string{"eat"}, "eat"),
+			Entry("when given a multiple words", []string{"eat", "treats"}, "eat treats"),
+			Entry("when given a multiple words as single argument", []string{"eat treats"}, "eat treats"),
+		)
+
+		DescribeTable("should return a task with it's title and tags set",
+			func(args []string, expectedTitle string, expectedTags []string) {
+				task := ParseTask(args)
+				Expect(task).To(Equal(api.Task{Title: expectedTitle, Tags: expectedTags, Type: api.TodoType.String()}))
+			},
+			Entry("when given a single word and single tag", []string{"eat", "#chore"}, "eat", []string{"chore"}),
+			Entry("when given a single word and single tag in reverse", []string{"#chore", "eat"}, "eat", []string{"chore"}),
+			Entry("when given a single word and multiple tags", []string{"eat", "#chore", "#delight"}, "eat", []string{"chore", "delight"}),
+		)
 	})
 })
 
@@ -98,4 +122,8 @@ func randomString(l int) string {
 
 func randomTaskName() string {
 	return "task-" + randomString(10)
+}
+
+func randomWord(size int) string {
+	return randomString(size)
 }
