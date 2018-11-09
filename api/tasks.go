@@ -60,7 +60,7 @@ func (api *HabiticaAPI) GetTasks(tt TaskType) []Task {
 	tasks := api.getTasks(tt)
 	addOrder(tasks)
 	for i := 0; i < len(tasks); i++ {
-		tasks[i].Tags = api.getTags(tasks[i])
+		tasks[i].Tags = api.getTagsByTask(tasks[i])
 	}
 	return tasks
 }
@@ -93,6 +93,26 @@ func (api *HabiticaAPI) AddTask(t Task) (Task, error) {
 	if !isOk {
 		return Task{}, err
 	}
+
+	tagIDs := []string{}
+	for _, tagName := range t.Tags {
+		tag, err := api.GetTag(tagName)
+		if err != nil {
+			return Task{}, err
+		}
+		if tag.ID == "" {
+			_, err = api.AddTag(tagName)
+			if err != nil {
+				return Task{}, err
+			}
+		}
+		tag, err = api.GetTag(tagName)
+		if err != nil {
+			return Task{}, err
+		}
+		tagIDs = append(tagIDs, tag.ID)
+	}
+	t.Tags = tagIDs
 
 	task, err := api.addTask(t)
 	if err != nil {

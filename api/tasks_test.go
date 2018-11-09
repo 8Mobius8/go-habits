@@ -200,38 +200,46 @@ var _ = Describe("Tasks", func() {
 				t = Task{}
 				t.Title = "Valid Todo Title"
 				t.Tags = []string{"valid", "test"}
-			})
-			It("will return a task with an new id", func() {
+
 				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/v3/tags"),
+						ghttp.RespondWith(200, CollectionTagsJSON([]string{})),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/v3/tags"),
+						ghttp.RespondWith(200, ValidTagJSON(t.Tags[0])),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/v3/tags"),
+						ghttp.RespondWith(200, CollectionTagsJSON([]string{})),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/v3/tags"),
+						ghttp.RespondWith(200, ValidTagJSON(t.Tags[1])),
+					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/v3/tasks/user"),
 						ghttp.RespondWith(201, ValidTask),
 					),
 				)
-
-				task, _ := habitapi.AddTask(t)
+			})
+			AfterEach(func() {
+				tagsCache = make(map[string]*Tag)
+			})
+			It("will return a task with an new id", func() {
+				task, err := habitapi.AddTask(t)
+				Expect(err).ToNot(HaveOccurred())
 				Expect(task.ID).ShouldNot(BeEmpty())
 			})
 			It("will return a task with same title", func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/v3/tasks/user"),
-						ghttp.RespondWith(201, ValidTask),
-					),
-				)
-
-				task, _ := habitapi.AddTask(t)
+				task, err := habitapi.AddTask(t)
+				Expect(err).ToNot(HaveOccurred())
 				Expect(task.Title).Should(Equal(t.Title))
 			})
 			It("will return a task with tags names", func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/v3/tasks/user"),
-						ghttp.RespondWith(201, ValidTask),
-					),
-				)
-
-				task, _ := habitapi.AddTask(t)
+				task, err := habitapi.AddTask(t)
+				Expect(err).ToNot(HaveOccurred())
 				Expect(task.Tags).Should(Equal([]string{"valid", "test"}))
 			})
 		})

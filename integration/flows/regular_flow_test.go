@@ -6,7 +6,6 @@ import (
 	. "github.com/8Mobius8/go-habits/integration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 )
 
@@ -19,8 +18,6 @@ var RegularFlow = struct {
 	"gh-regularpassword",
 	"gh-regularuser@go-habits.io",
 }
-
-var Say = gbytes.Say
 
 var _ = Describe("CLI User usage flows", func() {
 	var s *gexec.Session

@@ -49,14 +49,6 @@ func filterTask(id string, tasks []api.Task) []api.Task {
 	return filtered
 }
 
-func parseTaskTitle(args []string) string {
-	title := args[0]
-	for _, arg := range args[1:] {
-		title += " " + arg
-	}
-	return title
-}
-
 // ParseTask parses an api.Task from []string
 func ParseTask(args []string) api.Task {
 	var titleArgs, tagsArgs []string
@@ -72,6 +64,14 @@ func ParseTask(args []string) api.Task {
 	t := api.NewTask(parseTaskTitle(titleArgs), api.TodoType)
 	t.Tags = parseTags(tagsArgs)
 	return t
+}
+
+func parseTaskTitle(args []string) string {
+	title := args[0]
+	for _, arg := range args[1:] {
+		title += " " + arg
+	}
+	return title
 }
 
 func parseTags(args []string) []string {
