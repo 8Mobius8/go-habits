@@ -143,6 +143,15 @@ func GetUserConfigPath() string {
 	return ".go-habits.yml"
 }
 
+// ExpectSuccessfulLogin will run the login command and ultimately update the config file
+// used.
+func ExpectSuccessfulLogin(user, password string) {
+	s, in := GoHabitsWithStdin("login")
+	defer in.Close()
+	EventuallyLogin(s, in, user, password)
+	Eventually(s).Should(gexec.Exit(0))
+}
+
 func prependConfigArg(args ...string) []string {
 	configArgs := []string{"--config", GetUserConfigPath()}
 	return append(configArgs, args...)
