@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	api "github.com/8Mobius8/go-habits/api"
+	log "github.com/amoghe/distillog"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -71,7 +71,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
+			log.Errorln(err)
 			os.Exit(1)
 		}
 
@@ -84,6 +84,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		log.Debugln("Using config file:", viper.ConfigFileUsed())
 	}
 }

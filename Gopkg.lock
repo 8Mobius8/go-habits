@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  branch = "master"
+  digest = "1:ab8f3a4a05a124cc0770467431dedec75063653b1b148651080fd4c6a01445e1"
+  name = "github.com/amoghe/distillog"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ae382b35b7179be96f516c07ae0e54b7723a4822"
+
+[[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -269,6 +277,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/amoghe/distillog",
     "github.com/mitchellh/go-homedir",
     "github.com/onsi/ginkgo",
     "github.com/onsi/ginkgo/extensions/table",
