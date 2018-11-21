@@ -1,6 +1,8 @@
 package api
 
-import "fmt"
+import (
+	log "github.com/amoghe/distillog"
+)
 
 // Task is a Habitica task.
 type Task struct {
@@ -73,7 +75,7 @@ func (api *HabiticaAPI) getTasks(tt TaskType) []Task {
 	}
 	err := api.Get(url, &tasks)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 	}
 
 	return tasks

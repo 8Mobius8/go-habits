@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 
 	api "github.com/8Mobius8/go-habits/api"
 
@@ -24,12 +25,12 @@ var listCmd = &cobra.Command{
 func List(cmd *cobra.Command, args []string) {
 	apiClient := habitsServer
 	tasks := apiClient.GetTasks(api.TodoType)
-	printTasks(tasks)
+	printTasks(cmd.OutOrStdout(), tasks)
 }
 
-func printTasks(tasks []api.Task) {
+func printTasks(out io.Writer, tasks []api.Task) {
 	for _, task := range tasks {
-		fmt.Println(formatTask(task))
+		fmt.Fprintln(out, formatTask(task))
 	}
 }
 

@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	api "github.com/8Mobius8/go-habits/api"
+	log "github.com/amoghe/distillog"
 	"github.com/spf13/cobra"
 )
 
@@ -31,12 +31,12 @@ func Add(cmd *cobra.Command, args []string) {
 
 	t, err := client.AddTask(t)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 		os.Exit(1)
 	}
 
 	tasks := client.GetTasks(api.TodoType)
-	printTasks(filterTask(t.ID, tasks))
+	printTasks(cmd.OutOrStdout(), filterTask(t.ID, tasks))
 }
 
 func filterTask(id string, tasks []api.Task) []api.Task {

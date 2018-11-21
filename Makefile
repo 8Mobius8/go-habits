@@ -1,8 +1,8 @@
-CI_COMMIT_SHA		?= $(shell git rev-parse HEAD)
-BUILD_VERSION 	?= $(shell git describe --tags)
-SERVER 					?= http://localhost:3000/api
-INTEGRATION_ENV	?= BUILD_VERSION=${BUILD_VERSION} SERVER=${SERVER}
-LDFLAGS 				?= -ldflags "-X main.version=${BUILD_VERSION}"
+CI_COMMIT_SHA   ?= $(shell git rev-parse HEAD)
+BUILD_VERSION   ?= $(shell git describe --tags)
+SERVER          ?= http://localhost:3000/api
+INTEGRATION_ENV ?= BUILD_VERSION=${BUILD_VERSION} SERVER=${SERVER}
+LDFLAGS         ?= -ldflags "-X main.version=${BUILD_VERSION}"
 
 .PHONY: clean
 

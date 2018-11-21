@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
+
+	log "github.com/amoghe/distillog"
 )
 
 // HabiticaAPI Main client for interacting with Habitica API via HTTP
@@ -51,7 +52,7 @@ func readBody(res *http.Response) []byte {
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Errorln(err)
 	}
 	return body
 }
