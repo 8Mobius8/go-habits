@@ -77,6 +77,10 @@ func (api *HabiticaAPI) GetTags() ([]Tag, error) {
 
 var tagsCache = make(map[string]*Tag)
 
+func (api *HabiticaAPI) ClearTagCache() {
+	tagsCache = make(map[string]*Tag)
+}
+
 func updateCache(t Tag) {
 	newTag := t
 	tagsCache[newTag.ID] = &newTag

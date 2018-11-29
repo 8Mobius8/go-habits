@@ -24,7 +24,7 @@ var rootCmd = &cobra.Command{
 }
 
 func setupAPIClient() {
-	habitsServer = api.NewHabiticaAPI(nil, viper.GetString("server"))
+	habitsServer = api.NewHabiticaAPI(nil, viper.GetString("server"), log.NewNullLogger("null"))
 	habitsServer.UpdateUserAuth(getAuthConfig())
 }
 

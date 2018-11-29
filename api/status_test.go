@@ -1,8 +1,9 @@
-package api
+package api_test
 
 import (
 	"math/rand"
 
+	. "github.com/8Mobius8/go-habits/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

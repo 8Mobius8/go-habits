@@ -5,9 +5,11 @@ import (
 	"testing"
 
 	"github.com/8Mobius8/go-habits/api"
-	. "github.com/8Mobius8/go-habits/integration"
+	log "github.com/amoghe/distillog"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	. "github.com/8Mobius8/go-habits/integration"
 )
 
 func TestIntegration(t *testing.T) {
@@ -25,7 +27,7 @@ var _ = BeforeSuite(func() {
 	Ω(exists).ShouldNot(BeFalse())
 	Ω(BuildVersion).ShouldNot(BeEmpty())
 
-	APIClient = api.NewHabiticaAPI(nil, HabiticaAPIURI)
+	APIClient = api.NewHabiticaAPI(nil, HabiticaAPIURI, log.NewNullLogger("test"))
 	RegisterUser(HabiticaAPIURI, UserName, Password, Email)
 	SaveAPIToken(HabiticaAPIURI, UserName, Password)
 })

@@ -1,8 +1,9 @@
-package api
+package api_test
 
 import (
 	"fmt"
 
+	. "github.com/8Mobius8/go-habits/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
@@ -57,7 +58,7 @@ func ServerErrorJSON(errorShort, message string) string {
 
 var _ = Describe("Tags", func() {
 	BeforeEach(func() {
-		tagsCache = make(map[string]*Tag)
+		habitapi.ClearTagCache()
 	})
 
 	Describe("GetTagById", func() {

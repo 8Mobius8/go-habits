@@ -1,7 +1,7 @@
 package api
 
 import (
-	"log"
+	stdLog "log"
 	"net/http"
 )
 
@@ -19,7 +19,8 @@ func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
 	var resp UserToken
 	err := api.Post("/user/auth/local/login", creds, &resp)
 	if err != nil {
-		log.Fatalln(err)
+		api.logger.Errorln(err)
+		stdLog.Fatalln(err)
 	}
 
 	api.UpdateUserAuth(resp)
