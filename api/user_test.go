@@ -3,27 +3,12 @@ package api_test
 import (
 	"net/http"
 
-	. "github.com/8Mobius8/go-habits/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 )
 
 var _ = Describe("API User", func() {
-	var (
-		server *ghttp.Server
-		api    *HabiticaAPI
-	)
-
-	BeforeEach(func() {
-		server = ghttp.NewServer()
-		api = NewHabiticaAPI(nil, server.URL())
-	})
-
-	AfterEach(func() {
-		server.Close()
-	})
-
 	Describe("when getting a user's information", func() {
 		It("returns character statistics for a user.", func() {
 			server.AppendHandlers(
@@ -34,7 +19,7 @@ var _ = Describe("API User", func() {
 				),
 			)
 
-			stats, _ := api.Stats()
+			stats, _ := habitapi.Stats()
 			Expect(stats.Level).To(Equal(1))
 			Expect(stats.Health).To(Equal(50))
 			Expect(stats.Mana).To(Equal(30))

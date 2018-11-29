@@ -1,8 +1,11 @@
-package api
+package api_test
 
 import (
+	"io"
 	"testing"
 
+	. "github.com/8Mobius8/go-habits/api"
+	log "github.com/amoghe/distillog"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
@@ -18,7 +21,9 @@ func TestApi(t *testing.T) {
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		habitapi = NewHabiticaAPI(nil, server.URL())
+		ginkgoLogger := log.NewStreamLogger("GinkgoLog", noopCloser{GinkgoWriter})
+		habitapi = NewHabiticaAPI(nil, server.URL(), ginkgoLogger)
+
 	})
 
 	AfterEach(func() {
@@ -27,3 +32,9 @@ func TestApi(t *testing.T) {
 
 	RunSpecs(t, "api package unit tests")
 }
+
+type noopCloser struct {
+	io.Writer
+}
+
+func (n noopCloser) Close() error { return nil }

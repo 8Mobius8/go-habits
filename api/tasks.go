@@ -1,9 +1,5 @@
 package api
 
-import (
-	log "github.com/amoghe/distillog"
-)
-
 // Task is a Habitica task.
 type Task struct {
 	Order     int
@@ -75,7 +71,7 @@ func (api *HabiticaAPI) getTasks(tt TaskType) []Task {
 	}
 	err := api.Get(url, &tasks)
 	if err != nil {
-		log.Errorln(err)
+		api.logger.Errorln(err)
 	}
 
 	return tasks

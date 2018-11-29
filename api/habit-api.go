@@ -14,12 +14,17 @@ type HabiticaAPI struct {
 	client   *http.Client
 	hostURL  string
 	userAuth UserToken
+	logger   log.Logger
 }
 
 // NewHabiticaAPI is a function for creating a new client api. Can pass in prexisting client
 // for proxies or what not.
-func NewHabiticaAPI(client *http.Client, hosturl string) *HabiticaAPI {
+func NewHabiticaAPI(client *http.Client, hosturl string, logger log.Logger) *HabiticaAPI {
 	var api HabiticaAPI
+	api.logger = logger
+	if api.logger == nil {
+		api.logger = log.NewStderrLogger("stdGoHabits")
+	}
 
 	if client == nil {
 		api.client = &http.Client{}
@@ -43,27 +48,29 @@ func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
 	if err != nil {
 		return NewGoHabitsError(err.Error(), 1, "")
 	}
+	api.logger.Debugln(res.Status, req.Method, req.URL)
 
-	body := readBody(res)
-	return parseResponse(body, res, responseType)
+	body := api.readBody(res)
+	return api.parseResponse(body, res, responseType)
 }
 
-func readBody(res *http.Response) []byte {
+func (api *HabiticaAPI) readBody(res *http.Response) []byte {
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		log.Errorln(err)
+		api.logger.Errorln(err)
 	}
 	return body
 }
 
-func parseResponse(body []byte, res *http.Response, object interface{}) error {
+func (api *HabiticaAPI) parseResponse(body []byte, res *http.Response, object interface{}) error {
 	var hres habiticaResponse
 	var err error
 
 	if len(body) > 0 {
 		err = json.Unmarshal(body, &hres)
 		if err != nil {
+			api.logger.Debugln("Tried marshalling habitica response: ", string(body))
 			return err
 		}
 	}
@@ -75,6 +82,7 @@ func parseResponse(body []byte, res *http.Response, object interface{}) error {
 	if len(body) > 0 {
 		err = json.Unmarshal(hres.Data, &object)
 		if err != nil {
+			api.logger.Debugln("Tried marshalling data: ", string(body))
 			return err
 		}
 	}

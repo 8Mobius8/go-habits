@@ -1,9 +1,10 @@
-package api
+package api_test
 
 import (
 	"encoding/json"
 	"net/http"
 
+	. "github.com/8Mobius8/go-habits/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"

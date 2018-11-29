@@ -9,6 +9,7 @@ type GoHabitsError struct {
 
 func (err *GoHabitsError) Error() string {
 	return err.msg
+	//return fmt.Sprintf("Code %d Path %s %s", err.StatusCode, err.Path, err.msg)
 }
 
 // NewGoHabitsError is constructor for GoHabitsError that includes
