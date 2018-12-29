@@ -21,21 +21,31 @@ type HabiticaAPI struct {
 // for proxies or what not.
 func NewHabiticaAPI(client *http.Client, hosturl string, logger log.Logger) *HabiticaAPI {
 	var api HabiticaAPI
+
 	api.logger = logger
 	if api.logger == nil {
-		api.logger = log.NewStderrLogger("stdGoHabits")
+		api.logger = log.NewStderrLogger("go-habits")
+		api.logger.Debugln("No logger configured in, using stderr")
 	}
 
+	api.client = client
 	if client == nil {
 		api.client = &http.Client{}
+		api.logger.Debugln("No client configured in, using default client")
 	}
 
 	api.hostURL = hosturl
 	if hosturl == "" {
 		api.hostURL = `https://habitica.com/api`
 	}
+	api.logger.Debugln("Habitica url configured to: ", api.hostURL)
 
 	return &api
+}
+
+// GetHostURL returns client's hostURL configured.
+func (api *HabiticaAPI) GetHostURL() string {
+	return api.hostURL
 }
 
 // Do is a wrapper function around the api's http.client.Do but Marshals any json struct
@@ -46,11 +56,13 @@ func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
 
 	res, err := api.client.Do(req)
 	if err != nil {
+		api.logger.Errorln("Request failed on do ", err)
 		return NewGoHabitsError(err.Error(), 1, "")
 	}
-	api.logger.Debugln(res.Status, req.Method, req.URL)
 
 	body := api.readBody(res)
+	api.logger.Debugln(res.Status, req.Method, req.URL, "Body: \n", string(body))
+
 	return api.parseResponse(body, res, responseType)
 }
 
@@ -70,19 +82,23 @@ func (api *HabiticaAPI) parseResponse(body []byte, res *http.Response, object in
 	if len(body) > 0 {
 		err = json.Unmarshal(body, &hres)
 		if err != nil {
-			api.logger.Debugln("Tried marshalling habitica response: ", string(body))
+			api.logger.Debugln("Error marshalling habitica response: ", string(body))
+			api.logger.Errorln(err)
 			return err
 		}
 	}
 
 	if hres.Error != "" || res.StatusCode >= 400 {
-		return parseHabitsServerError(hres, res)
+		err := parseHabitsServerError(hres, res)
+		api.logger.Errorln("Error status from Habitica API", err)
+		return err
 	}
 
 	if len(body) > 0 {
 		err = json.Unmarshal(hres.Data, &object)
 		if err != nil {
-			api.logger.Debugln("Tried marshalling data: ", string(body))
+			api.logger.Debugln("Error marshalling data: ", string(body))
+			api.logger.Errorln(err)
 			return err
 		}
 	}
@@ -112,6 +128,7 @@ func parseHabitsServerError(hres habiticaResponse, res *http.Response) error {
 func (api *HabiticaAPI) Get(route string, responseType interface{}) error {
 	req, err := http.NewRequest("GET", api.hostURL+"/v3"+route, nil)
 	if err != nil {
+		api.logger.Errorln(err)
 		return err
 	}
 
@@ -123,11 +140,13 @@ func (api *HabiticaAPI) Get(route string, responseType interface{}) error {
 func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObject interface{}) error {
 	data, merr := json.Marshal(requestObject)
 	if merr != nil {
+		api.logger.Errorln(merr)
 		return merr
 	}
 
 	req, rerr := http.NewRequest("POST", api.hostURL+"/v3"+url, bytes.NewBuffer(data))
 	if rerr != nil {
+		api.logger.Errorln(rerr)
 		return rerr
 	}
 	err := api.Do(req, responseObject)

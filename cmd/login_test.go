@@ -9,10 +9,11 @@ import (
 
 type MockAuthenticateServer struct {
 	AuthenticateOut api.UserToken
+	ErrorOut        error
 }
 
-func (ms MockAuthenticateServer) Authenticate(user, password string) api.UserToken {
-	return ms.AuthenticateOut
+func (ms MockAuthenticateServer) Authenticate(user, password string) (api.UserToken, error) {
+	return ms.AuthenticateOut, ms.ErrorOut
 }
 
 var _ = Describe("Login cmd", func() {

@@ -26,7 +26,7 @@ var loginCmd = &cobra.Command{
 }
 
 type authServer interface {
-	Authenticate(string, string) api.UserToken
+	Authenticate(string, string) (api.UserToken, error)
 }
 
 // Login or `go-habits login` allows habiters to logon to a
@@ -34,7 +34,7 @@ type authServer interface {
 // file. The file must be previously created.
 func Login(in io.Reader, out io.Writer, as authServer, args []string) {
 	user := scanForUserCreds(in, out)
-	creds := as.Authenticate(user.UserName, user.Password)
+	creds, _ := as.Authenticate(user.UserName, user.Password)
 	fmt.Fprintln(out, "Login Successful <3")
 	setAuthConfig(creds)
 	saveToConfigFile(out)

@@ -14,47 +14,63 @@ var _ = Describe("Habitica API Router", func() {
 	Describe("when authenicating with user", func() {
 		var expectedCreds UserToken
 
-		BeforeEach(func() {
-			expectedCreds = defaultUserCredientials()
-			server.AppendHandlers(
-				defaultAuthHandlers(expectedCreds.ID, expectedCreds.APIToken),
-			)
+		Context("when server sends an ok response", func() {
+			BeforeEach(func() {
+				expectedCreds = defaultUserCredientials()
+				server.AppendHandlers(
+					defaultAuthHandlers(expectedCreds.ID, expectedCreds.APIToken),
+				)
+			})
+
+			It("get api token", func() {
+				creds, _ := habitapi.Authenticate("bob", "p4ssw0rd")
+				Expect(creds.ID).To(Equal(expectedCreds.ID))
+				Expect(creds.APIToken).To(Equal(expectedCreds.APIToken))
+			})
+
+			It("will call request with authenticated headers", func() {
+				server.AppendHandlers(
+					VerifyAuthHeaders(expectedCreds.ID, expectedCreds.APIToken),
+					VerifyAuthHeaders(expectedCreds.ID, expectedCreds.APIToken),
+				)
+
+				type empty struct{}
+				var e empty
+				habitapi.Authenticate("bob", "p4ssw0rd")
+				habitapi.Get("/empty", &e)
+				habitapi.Post("/empty", &e, &e)
+			})
+
+			Context("when using Do will do any type of request with authenticated headers", func() {
+				methods := []string{
+					http.MethodGet, http.MethodDelete, http.MethodPut, http.MethodPost, http.MethodPatch,
+				}
+				for _, method := range methods {
+					It("will do any type of request with authenticated headers", func() {
+						habitapi.Authenticate("bob", "p4ssw0rd")
+						req, _ := http.NewRequest(method, "/echo", nil)
+
+						type empty struct{}
+						var e empty
+						habitapi.Do(req, e)
+					})
+				}
+
+			})
 		})
 
-		It("get api token", func() {
-			creds := habitapi.Authenticate("bob", "p4ssw0rd")
-			Expect(creds.ID).To(Equal(expectedCreds.ID))
-			Expect(creds.APIToken).To(Equal(expectedCreds.APIToken))
-		})
-
-		It("will call request with authenticated headers", func() {
-			server.AppendHandlers(
-				VerifyAuthHeaders(expectedCreds.ID, expectedCreds.APIToken),
-				VerifyAuthHeaders(expectedCreds.ID, expectedCreds.APIToken),
-			)
-
-			type empty struct{}
-			var e empty
-			habitapi.Authenticate("bob", "p4ssw0rd")
-			habitapi.Get("/empty", &e)
-			habitapi.Post("/empty", &e, &e)
-		})
-
-		Context("when using Do will do any type of request with authenticated headers", func() {
-			methods := []string{
-				http.MethodGet, http.MethodDelete, http.MethodPut, http.MethodPost, http.MethodPatch,
-			}
-			for _, method := range methods {
-				It("will do any type of request with authenticated headers", func() {
-					habitapi.Authenticate("bob", "p4ssw0rd")
-					req, _ := http.NewRequest(method, "/echo", nil)
-
-					type empty struct{}
-					var e empty
-					habitapi.Do(req, e)
-				})
-			}
-
+		Context("when server sends an an error as response", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					errorAuthHandlers(),
+				)
+			})
+			It("will fail when api returns a an error", func() {
+				creds, err := habitapi.Authenticate("bob", "p4ssw0rd")
+				Expect(creds.ID).To(Equal(""))
+				Expect(creds.APIToken).To(Equal(""))
+				Expect(err).To(HaveOccurred())
+			})
 		})
 
 	})
@@ -86,6 +102,21 @@ func defaultUserCredientials() UserToken {
 	}
 }
 
+func errorAuthHandlers() http.HandlerFunc {
+	return ghttp.CombineHandlers(
+		ghttp.VerifyRequest("POST", "/v3/user/auth/local/login"),
+		RespondAuthWithError(),
+	)
+}
+
+func RespondAuthWithError() http.HandlerFunc {
+	return ghttp.RespondWith(http.StatusUnauthorized,
+		`{ "success": false,
+			 "error": "Wrong token",
+			 "appVersion": "4.41.5"
+		}`)
+}
+
 func defaultAuthHandlers(id string, token string) http.HandlerFunc {
 	return ghttp.CombineHandlers(
 		ghttp.VerifyRequest("POST", "/v3/user/auth/local/login"),
@@ -94,7 +125,15 @@ func defaultAuthHandlers(id string, token string) http.HandlerFunc {
 }
 
 func RespondAuthWithOk(id string, token string) http.HandlerFunc {
-	return ghttp.RespondWith(http.StatusOK, `{ "success": true,"data":{"id": "`+id+`","apiToken": "`+token+`","newUser": false},"appVersion": "4.41.5"}`)
+	return ghttp.RespondWith(http.StatusOK,
+		`{ "success": true,
+			 "data":{ 
+				 "id": "`+id+`",
+				 "apiToken": "`+token+`",
+				 "newUser": false
+				},
+				"appVersion": "4.41.5"
+		}`)
 }
 
 func VerifyAuthHeaders(id string, token string) http.HandlerFunc {

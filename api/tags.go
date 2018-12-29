@@ -77,6 +77,7 @@ func (api *HabiticaAPI) GetTags() ([]Tag, error) {
 
 var tagsCache = make(map[string]*Tag)
 
+// ClearTagCache will clear out in-memory Tag cache for client
 func (api *HabiticaAPI) ClearTagCache() {
 	tagsCache = make(map[string]*Tag)
 }

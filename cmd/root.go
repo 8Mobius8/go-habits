@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 
-	api "github.com/8Mobius8/go-habits/api"
 	log "github.com/amoghe/distillog"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -23,31 +22,12 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func setupAPIClient() {
-	habitsServer = api.NewHabiticaAPI(nil, viper.GetString("server"), log.NewNullLogger("null"))
-	habitsServer.UpdateUserAuth(getAuthConfig())
-}
-
-func getAuthConfig() api.UserToken {
-	id := viper.GetString("auth.local.id")
-	token := viper.GetString("auth.local.apitoken")
-	creds := api.UserToken{}
-	creds.ID = id
-	creds.APIToken = token
-	return creds
-}
-
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	rootCmd.Version = Version
 	if err := rootCmd.Execute(); err != nil {
-		exitCode := 1
-		ghe, ok := err.(*api.GoHabitsError)
-		if ok {
-			rootCmd.Print(ghe)
-			exitCode = ghe.StatusCode
-		}
+		exitCode := handleRootError(err)
 		os.Exit(exitCode)
 	}
 }
@@ -57,6 +37,7 @@ func init() {
 
 	rootCmd.SetOutput(os.Stdout)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.go-habits.yml)")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log", "", "logging level (default is none; can use ERROR,INFO,WARN,DEBUG)")
 
 	rootCmd.PersistentFlags().StringVar(&habitsServerURL, "server", "http://habitica.com/api", "Set to '/api' uri of desired habits server.")
 	viper.BindPFlag("server", rootCmd.PersistentFlags().Lookup("server"))

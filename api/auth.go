@@ -1,13 +1,12 @@
 package api
 
 import (
-	stdLog "log"
 	"net/http"
 )
 
 // Authenticate will return Habitica ID and APIToken with given username
 // and password.
-func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
+func (api *HabiticaAPI) Authenticate(user string, password string) (UserToken, error) {
 	creds := struct {
 		UserName string `json:"username"`
 		Password string `json:"password"`
@@ -20,12 +19,12 @@ func (api *HabiticaAPI) Authenticate(user string, password string) UserToken {
 	err := api.Post("/user/auth/local/login", creds, &resp)
 	if err != nil {
 		api.logger.Errorln(err)
-		stdLog.Fatalln(err)
+		return UserToken{}, err
 	}
 
 	api.UpdateUserAuth(resp)
 
-	return resp
+	return resp, nil
 }
 
 // UpdateUserAuth takes a UserToken object and updates apiclient's user's id and token.
