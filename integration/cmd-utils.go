@@ -73,7 +73,10 @@ func RegisterUser(serverURI, username, password, email string) {
 
 // GetAPIToken returns habitica api token and id
 func GetAPIToken(serverURI, username, password string) (token, id string) {
-	creds := APIClient.Authenticate(username, password)
+	creds, err := APIClient.Authenticate(username, password)
+	if err != nil {
+		return "", ""
+	}
 	return creds.APIToken, creds.ID
 }
 

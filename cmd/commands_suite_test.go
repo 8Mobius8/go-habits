@@ -17,7 +17,8 @@ var server *ghttp.Server
 func TestCmd(t *testing.T) {
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		habitsServer = api.NewHabiticaAPI(nil, server.URL(), log.NewNullLogger("test"))
+		ginkgoLogger := log.NewStreamLogger("GinkgoLog", noopCloser{GinkgoWriter})
+		habitsServer = api.NewHabiticaAPI(nil, server.URL(), ginkgoLogger)
 		habitsServerURL = server.URL()
 	})
 

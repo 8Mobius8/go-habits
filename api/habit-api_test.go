@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"encoding/json"
+	"math/rand"
 	"net/http"
 
 	. "github.com/8Mobius8/go-habits/api"
@@ -11,6 +12,22 @@ import (
 )
 
 var _ = Describe("Habitica API Router", func() {
+
+	Describe("when creating a new Habitica Client", func() {
+		Context("And no hostUrl or client is given", func() {
+			It("will set the client to use `https://habitica.com/api` as api route", func() {
+				client := NewHabiticaAPI(nil, "", nil)
+				Expect(client.GetHostURL()).To(Equal("https://habitica.com/api"))
+			})
+		})
+		Context("And a hostURL is given", func() {
+			It("will set the client to use the given string as api route", func() {
+				randomAPIRoute := randomString(10)
+				client := NewHabiticaAPI(nil, randomAPIRoute, nil)
+				Expect(client.GetHostURL()).To(Equal(randomAPIRoute))
+			})
+		})
+	})
 
 	Describe("when recieving okay headers from api", func() {
 		okStatuses := []int{
@@ -166,3 +183,13 @@ var _ = Describe("Habitica API Router", func() {
 		})
 	})
 })
+
+const pool = "0987654321abcdefghijklmnopqrstuvwxyz"
+
+func randomString(l int) string {
+	bytes := make([]byte, l)
+	for i := 0; i < l; i++ {
+		bytes[i] = pool[rand.Intn(len(pool))]
+	}
+	return string(bytes)
+}

@@ -23,7 +23,6 @@ func TestApi(t *testing.T) {
 		server = ghttp.NewServer()
 		ginkgoLogger := log.NewStreamLogger("GinkgoLog", noopCloser{GinkgoWriter})
 		habitapi = NewHabiticaAPI(nil, server.URL(), ginkgoLogger)
-
 	})
 
 	AfterEach(func() {
