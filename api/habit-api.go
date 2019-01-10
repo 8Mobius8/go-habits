@@ -24,8 +24,8 @@ func NewHabiticaAPI(client *http.Client, hosturl string, logger log.Logger) *Hab
 
 	api.logger = logger
 	if api.logger == nil {
-		api.logger = log.NewStderrLogger("go-habits")
-		api.logger.Debugln("No logger configured in, using stderr")
+		api.logger = log.NewNullLogger("go-habits")
+		api.logger.Debugln("No logger configured in, using /dev/null")
 	}
 
 	api.client = client
@@ -82,9 +82,9 @@ func (api *HabiticaAPI) parseResponse(body []byte, res *http.Response, object in
 	if len(body) > 0 {
 		err = json.Unmarshal(body, &hres)
 		if err != nil {
-			api.logger.Debugln("Error marshalling habitica response: ", string(body))
+			api.logger.Debugln("Unmarshal habitica response failed", string(body))
 			api.logger.Errorln(err)
-			return err
+			return NewGoHabitsError("Unmarshal habitica response failed", 1, res.Request.URL.EscapedPath())
 		}
 	}
 
@@ -97,9 +97,9 @@ func (api *HabiticaAPI) parseResponse(body []byte, res *http.Response, object in
 	if len(body) > 0 {
 		err = json.Unmarshal(hres.Data, &object)
 		if err != nil {
-			api.logger.Debugln("Error marshalling data: ", string(body))
+			api.logger.Debugln("Unmarshal data failed", string(body))
 			api.logger.Errorln(err)
-			return err
+			return NewGoHabitsError("Unmarshal data failed", 1, res.Request.URL.EscapedPath())
 		}
 	}
 	return nil
@@ -135,7 +135,7 @@ func (api *HabiticaAPI) Get(route string, responseType interface{}) error {
 	return api.Do(req, responseType)
 }
 
-// Post will take in route, request data as a struct, and response as a struct and output errors for
+// Post will take in url, request data as a struct, and response as a struct and output errors for
 // marshalling either.
 func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObject interface{}) error {
 	data, merr := json.Marshal(requestObject)
@@ -149,6 +149,6 @@ func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObje
 		api.logger.Errorln(rerr)
 		return rerr
 	}
-	err := api.Do(req, responseObject)
-	return err
+
+	return api.Do(req, responseObject)
 }

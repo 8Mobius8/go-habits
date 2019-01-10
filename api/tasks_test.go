@@ -176,23 +176,6 @@ var _ = Describe("Tasks", func() {
 		Entry("Completed task type", "this is a completed todo", CompletedTodoType, "completedTodo"),
 	)
 
-	// Describe("addOrder", func() {
-	// 	It("returns tasks with Order as given", func() {
-	// 		var tasks = []Task{
-	// 			{Title: "Clean Dishes", Tags: []string{"tag-guid-1"}, Type: "todo"},
-	// 			{Title: "Laundry", Tags: []string{"tag-guid-1"}, Type: "todo"},
-	// 			{Title: "Make bed", Tags: []string{"tag-guid-1"}, Type: "todo"},
-	// 		}
-
-	// 		addOrder(tasks)
-
-	// 		Expect(len(tasks)).Should(BeNumerically("==", 3))
-	// 		for i, task := range tasks {
-	// 			Expect(task.Order).Should(BeNumerically("==", i+1))
-	// 		}
-	// 	})
-	// })
-
 	Describe("AddTask", func() {
 		Context("given valid task", func() {
 			var t Task

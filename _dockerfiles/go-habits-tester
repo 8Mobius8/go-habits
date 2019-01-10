@@ -1,8 +1,6 @@
 FROM golang:1.10 AS builder
 
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-RUN go get github.com/onsi/ginkgo/ginkgo \
-  && go get github.com/onsi/gomega/...
+RUN make setup
 
 WORKDIR $GOPATH/src/github.com/8Mobius8/go-habits
 COPY Gopkg.toml Gopkg.lock ./
