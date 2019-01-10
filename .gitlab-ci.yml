@@ -9,7 +9,7 @@ build-images:
     - pip install docker-compose
   script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - make build-images push=t
+    - make build-images push=true
 
 unit-tests:
   image: docker
@@ -21,7 +21,7 @@ unit-tests:
     - apk add --no-cache py-pip make
     - pip install docker-compose
   script:
-    - docker-compose run -e CC_TEST_REPORTER_ID=$CC_TEST_REPORTER_ID -e ccreporter=t unit
+    - docker-compose run -e CC_TEST_REPORTER_ID=$CC_TEST_REPORTER_ID -e ccreporter=true unit
 
 integration-tests:
   image: docker

@@ -161,7 +161,6 @@ var _ = Describe("Habitica API Router", func() {
 		})
 
 		Describe("and errors are Habitica API errors", func() {
-
 			It("will response with Habitica error message Go-Habits Status code", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
@@ -180,6 +179,24 @@ var _ = Describe("Habitica API Router", func() {
 				Expect(habitErr.Error()).To(Equal("NotAuthorized\nMissing authentication headers."))
 				Expect(habitErr.Path).To(Equal("/v3/user"))
 			})
+		})
+	})
+
+	Context("when recieving unmarshable content from API", func() {
+		It("the Do function will return an error", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/v3/something"),
+					ghttp.RespondWith(http.StatusOK, `{"data":{"resource":"somebrokenbytes}`),
+				),
+			)
+			req, _ := http.NewRequest("GET", server.URL()+"/v3/something", nil)
+			err := habitapi.Do(req, nil)
+
+			Expect(err).To(HaveOccurred())
+			habitErr := err.(*GoHabitsError)
+			Expect(habitErr.Error()).To(And(ContainSubstring("Unmarshal"), ContainSubstring("failed")))
+			Expect(habitErr.Path).To(Equal("/v3/something"))
 		})
 	})
 })
