@@ -34,11 +34,26 @@ ifeq (, $(shell which ginkgo))
 	go get github.com/onsi/ginkgo/ginkgo
 endif
 
+# Installs varies cli tools needed to run CI. Not really tested on systems other than docker.
+.PHONY: install-reporter install-dep
+install-reporter:
+	curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter \
+    && chmod +x ./cc-test-reporter
+
+install-dep:
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+
+install-test:
+	go get github.com/onsi/ginkgo/ginkgo
+
 # Install all depedancies for building and testings
 # Only `dep`
-.PHONY: dep 
+.PHONY: dep dep-vendor-only
 dep: setup
 	dep ensure -v
+
+dep-vendor-only:
+	dep ensure -v -vendor-only
 
 # Will build artifacts: executable, docker images.
 .PHONY: build go-build build-images
@@ -68,7 +83,7 @@ install:
 test:	install test-unit test-integration
 
 test-unit:
-	rm c.out
+	rm -f c.out
 ifdef ccreporter
 	./cc-test-reporter before-build
 endif
@@ -82,11 +97,14 @@ endif
 	-skipPackage integration \
 	-r \
 	.
+	cat c.out | grep --max-count=1 ^mode: > c.cov
+	cat c.out | grep -v ^mode: >> c.cov
+	mv c.cov c.out 
 ifdef ccreporter
 	./cc-test-reporter after-build
 endif
 
-test-integration: install docker-services
+test-integration:
 	${INTEGRATION_ENV} ./integration/wait-for-habitica-api.sh
 	${INTEGRATION_ENV} ginkgo -r --trace --progress ./integration
 
@@ -99,9 +117,7 @@ docker-services:
 # `ginkgo` returns mutliple `mode: atomic` lines.
 .PHONY: coverage
 coverage: test-unit
-	cat c.out | grep --max-count=1 ^mode: > c.cov
-	cat c.out | grep -v ^mode: >> c.cov 
-	go tool cover -func=c.cov
+	go tool cover -func=c.out
 
 # Useful for development on this project. Spin up habitica API server, lint 
 # files, uses `gofmt` as linter, continuous run tests when editing go files.

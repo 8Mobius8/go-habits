@@ -1,16 +1,12 @@
 FROM golang:1.10 AS builder
 
-RUN make setup
-
 WORKDIR $GOPATH/src/github.com/8Mobius8/go-habits
-COPY Gopkg.toml Gopkg.lock ./
-RUN dep ensure -v -vendor-only
+COPY Gopkg.toml Gopkg.lock  Makefile ./
 
-RUN curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter \
-    && chmod +x ./cc-test-reporter
+RUN make install-reporter install-dep install-test
+RUN make dep-vendor-only
 
 COPY . ./
 
-RUN make build
-
-CMD make install
+RUN make go-build
+RUN make install
