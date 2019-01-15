@@ -1,55 +1,18 @@
-CI_COMMIT_SHA   ?= $(shell git rev-parse HEAD)
 BUILD_VERSION   ?= $(shell git describe --tags)
 PKG_LIST 				?= $(shell go list ./... | grep -v /vendor/)
 SERVER          ?= http://localhost:3000/api
 INTEGRATION_ENV ?= BUILD_VERSION=${BUILD_VERSION} SERVER=${SERVER}
 LDFLAGS         ?= -ldflags "-X main.version=${BUILD_VERSION}"
+DOCKER_SERVICE_LIST ?= "tests"
 
+# All build so that when `make` is called with
+# just build binary
+all: dep go-build
 
-# Setup to show what needs to be installed
-.PHONY: setup setup-go setup-docker setup-dep setup-test
-setup:	setup-go setup-docker setup-dep setup-test
-
-setup-go:
-ifeq (, $(shell which go))
-	@echo "Please install a verison of golang."
-	@echo "https://golang.org/doc/install"
-endif
-
-setup-docker:
-ifeq (, $(shell which docker-compose))
-	@echo "Please install a verison docker and docker-compose."
-	@echo "https://docs.docker.com/install"
-endif
-
-setup-dep:
-ifeq (, $(shell which dep))
-	@echo "Please install dep"
-	@echo "https://golang.github.io/dep/docs/installation.html"
-endif
-
-setup-test:
-ifeq (, $(shell which ginkgo))
-	@echo "No ginkgo in PATH. Will attempt to install"
-	go get github.com/onsi/ginkgo/ginkgo
-endif
-
-# Installs varies cli tools needed to run CI. Not really tested on systems other than docker.
-.PHONY: install-reporter install-dep
-install-reporter:
-	curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter \
-    && chmod +x ./cc-test-reporter
-
-install-dep:
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-
-install-test:
-	go get github.com/onsi/ginkgo/ginkgo
-
-# Install all depedancies for building and testings
+# Install go depedancies using dep
 # Only `dep`
 .PHONY: dep dep-vendor-only
-dep: setup
+dep:
 	dep ensure -v
 
 dep-vendor-only:
@@ -62,15 +25,20 @@ build: go-build build-images
 go-build:	
 	go build ${LDFLAGS}
 
+# Builds docker images for go-habits to be use in docker-compose
+# also can push images to registry. You will need to run this before
+# trying to use the docker-compose file.
 build-images:
-	CI_COMMIT_SHA=${CI_COMMIT_SHA} docker-compose build tests
-ifdef push
-	CI_COMMIT_SHA=${CI_COMMIT_SHA} docker-compose push tests
-endif
+	docker build -f _dockerfiles/go-habits-tester \
+		--tag registry.gitlab.com/8mobius8/go-habits/tester:latest .
 ifdef api
-	docker-compose build habitica
+	docker build -f _dockerfiles/habitica \
+		--tag registry.gitlab.com/8mobius8/go-habits/habitica:latest .
+endif
 ifdef push
-	docker-compose push habitica
+	docker push registry.gitlab.com/8mobius8/go-habits/tester:latest
+ifdef api
+	docker push registry.gitlab.com/8mobius8/go-habits/habitica:latest
 endif
 endif
 
@@ -78,15 +46,12 @@ endif
 install:
 	go install ${LDFLAGS}
 
-# Run full test suite
+# Runs full test suite
 .PHONY: test test-unit test-integration
-test:	install test-unit test-integration
+test:	test-unit test-integration
 
-test-unit:
+test-unit: dep
 	rm -f c.out
-ifdef ccreporter
-	./cc-test-reporter before-build
-endif
 	ginkgo \
 	-randomizeAllSpecs -randomizeSuites \
 	-failOnPending \
@@ -97,32 +62,41 @@ endif
 	-skipPackage integration \
 	-r \
 	.
-	cat c.out | grep --max-count=1 ^mode: > c.cov
-	cat c.out | grep -v ^mode: >> c.cov
-	mv c.cov c.out 
-ifdef ccreporter
-	./cc-test-reporter after-build
-endif
 
-test-integration:
+test-integration: dep install
 	${INTEGRATION_ENV} ./integration/wait-for-habitica-api.sh
 	${INTEGRATION_ENV} ginkgo -r --trace --progress ./integration
 
-.PHONY: docker-services
-docker-services:
-	docker-compose up -d habitica
-
-
 # Uses ginkgo's output which doesn't respect `go tool cover` format.
 # `ginkgo` returns mutliple `mode: atomic` lines.
-.PHONY: coverage
+.PHONY: coverage coverage-html code-climate cc-before cc-after
 coverage: test-unit
+	cat c.out | grep --max-count=1 ^mode: > c.cov
+	cat c.out | grep -v ^mode: >> c.cov
+	mv c.cov c.out
 	go tool cover -func=c.out
+
+coverage-html: test-unit
+	cat c.out | grep --max-count=1 ^mode: > c.cov
+	cat c.out | grep -v ^mode: >> c.cov
+	mv c.cov c.out
+	go tool cover -html=c.out -o coverage.html
+
+# Ordered goal to ensure cc-test-reporter is called before tests are run.
+# Ment to be run using docker or in CI.
+code-climate: | cc-before coverage cc-after
+cc-before:
+	cc-test-reporter before-build
+cc-after:
+	cc-test-reporter after-build
+
+lint:
+	golint ${PKG_LIST}
 
 # Useful for development on this project. Spin up habitica API server, lint 
 # files, uses `gofmt` as linter, continuous run tests when editing go files.
 .PHONY: dev dev-format
-dev: dev-format install docker-services
+dev: dev-format install
 	${INTEGRATION_ENV} ginkgo watch ./...
 
 # Lints and applies lints to code.
