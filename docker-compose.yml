@@ -1,19 +1,17 @@
 version: "3"
 
 services:
-  tests:
-    build:
-      context: .
-      dockerfile: _dockerfiles/go-habits-tester
-    image: registry.gitlab.com/8mobius8/go-habits/tester:${CI_COMMIT_SHA}
-
   unit:
-    image: registry.gitlab.com/8mobius8/go-habits/tester:${CI_COMMIT_SHA}
+    image: registry.gitlab.com/8mobius8/go-habits/tester
     command: ["make", "test-unit"]
+    volumes:
+      - .:/go/src/github.com/8Mobius8/go-habits
 
   integration:
-    image: registry.gitlab.com/8mobius8/go-habits/tester:${CI_COMMIT_SHA}
+    image: registry.gitlab.com/8mobius8/go-habits/tester
     command: ["make", "test-integration"]
+    volumes:
+      - .:/go/src/github.com/8Mobius8/go-habits
     environment:
       SERVER: http://habitica:3000/api
     links:
@@ -22,9 +20,6 @@ services:
       - habitica
 
   habitica:
-    build: 
-      context: .
-      dockerfile: _dockerfiles/habitica
     image: registry.gitlab.com/8mobius8/go-habits/api
     ports:
       - "3000:3000"

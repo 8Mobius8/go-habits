@@ -15,24 +15,31 @@ const (
 	Error   = 3
 )
 
+var logLevelRegexPairs map[LogLevel]string
+
+func init() {
+	logLevelRegexPairs = make(map[LogLevel]string)
+	logLevelRegexPairs[Debug] = "DEBUG|debug"
+	logLevelRegexPairs[Warning] = "WARN|warn"
+	logLevelRegexPairs[Info] = "INFO|info"
+	logLevelRegexPairs[Error] = "ERROR|error"
+}
+
 // ParseLevelFromString uses regexp package to determine what `LogLevel`
 // you would like to use. Useful for making configuration
 func ParseLevelFromString(s string) LogLevel {
-	matched, _ := regexp.MatchString("DEBUG|debug", s)
-	if matched {
-		return Debug
+	for ll, regex := range logLevelRegexPairs {
+		matched, _ := regexp.MatchString(regex, s)
+		if matched {
+			return ll
+		}
 	}
-	matched, _ = regexp.MatchString("WARN|warn", s)
-	if matched {
-		return Warning
-	}
-	matched, _ = regexp.MatchString("INFO|info", s)
-	if matched {
-		return Info
-	}
-	matched, _ = regexp.MatchString("ERROR|error", s)
-	if matched {
-		return Error
-	}
-	return -1
+
+	// Fallback to Error level if log level didn't match
+	return Error
+}
+
+func matchLevel(s string, ll LogLevel, regex string) bool {
+	matched, _ := regexp.MatchString(regex, s)
+	return matched
 }
