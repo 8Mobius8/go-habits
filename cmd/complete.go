@@ -24,7 +24,7 @@ var completeCmd = &cobra.Command{
 	},
 }
 
-type tasksServer interface {
+type TasksServer interface {
 	GetTasks(api.TaskType) []api.Task
 	AddTask(api.Task) (api.Task, error)
 	ScoreTaskUp(api.Task) error
@@ -34,7 +34,7 @@ type tasksServer interface {
 // todos on their existing list. `complete` task in a interger
 // number representing the position of the todo they would like
 // to complete.
-func Complete(ts tasksServer, args []string) (string, error) {
+func Complete(ts TasksServer, args []string) (string, error) {
 	out := ""
 	parseArg, err := strconv.Atoi(args[0])
 	t, err := GetTaskAtPosition(ts, parseArg-1)
@@ -59,7 +59,7 @@ func Complete(ts tasksServer, args []string) (string, error) {
 
 // GetTaskAtPosition returns todo from task server at a given position or
 // index
-func GetTaskAtPosition(ts tasksServer, p int) (api.Task, error) {
+func GetTaskAtPosition(ts TasksServer, p int) (api.Task, error) {
 	tasks := ts.GetTasks(api.TodoType)
 	if len(tasks) == 0 {
 		return api.Task{}, fmt.Errorf("no tasks")

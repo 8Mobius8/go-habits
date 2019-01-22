@@ -1,6 +1,9 @@
 package api_test
 
 import (
+	"net/http"
+
+	"github.com/8Mobius8/go-habits/api"
 	. "github.com/8Mobius8/go-habits/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -316,6 +319,77 @@ var _ = Describe("Tasks", func() {
 				Expect(err).Should(HaveOccurred())
 				goHabitsError := err.(*GoHabitsError)
 				Expect(goHabitsError.Error()).Should(ContainSubstring("Task id is empty"))
+			})
+		})
+	})
+
+	Describe("DeleteTask", func() {
+		Context("given the task does not exist on server", func() {
+			It("will return with error saying that the task ID not exist", func() {
+				task := Task{ID: "someid"}
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", "/v3/tasks/"+task.ID),
+						ghttp.RespondWith(404, `{
+						"success": false,
+						"error": "NotFound",
+						"message": "Task not found."
+						}`),
+					),
+				)
+
+				err := habitapi.DeleteTask(task)
+				Expect(err).Should(HaveOccurred())
+				goHabitsError := err.(*GoHabitsError)
+				Expect(goHabitsError.Error()).Should(ContainSubstring("Task not found"))
+			})
+			It("will return with error saying that the task needs an ID in order to delete", func() {
+				task := Task{}
+
+				err := habitapi.DeleteTask(task)
+				Expect(err).Should(HaveOccurred())
+				goHabitsError := err.(*GoHabitsError)
+				Expect(goHabitsError.Error()).Should(ContainSubstring("Task id is empty"))
+			})
+		})
+		Context("given the task exists on server", func() {
+			It("will return nil on delete", func() {
+				task := api.Task{ID: "id"}
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", "/v3/tasks/"+task.ID),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"data": {},
+							"notifications": []
+						}`),
+					),
+				)
+
+				err := habitapi.DeleteTask(task)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+		Context("given the task exists on the server but not-authorized", func() {
+			It("will return with unauthorized error", func() {
+				task := api.Task{ID: "id"}
+				message := randomString(10)
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", "/v3/tasks/"+task.ID),
+						ghttp.RespondWith(http.StatusUnauthorized, `{
+							"success": false,
+							"error":"NotAuthorized",
+							"message":"`+message+`"
+						}`),
+					),
+				)
+
+				err := habitapi.DeleteTask(task)
+				Expect(err).Should(HaveOccurred())
+				goHabitsError := err.(*GoHabitsError)
+				Expect(goHabitsError.StatusCode).Should(Equal(401))
+				Expect(goHabitsError.Error()).Should(Equal(message))
 			})
 		})
 	})
