@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 )
 
 var _ = Describe("Add command", func() {
@@ -65,7 +66,6 @@ var _ = Describe("Add command", func() {
 	})
 
 	Describe("ParseTask", func() {
-
 		DescribeTable("should return a task with it's title set",
 			func(args []string, expectedTitle string) {
 				task := ParseTask(args)
@@ -85,6 +85,35 @@ var _ = Describe("Add command", func() {
 			Entry("when given a single word and single tag in reverse", []string{"#chore", "eat"}, "eat", []string{"chore"}),
 			Entry("when given a single word and multiple tags", []string{"eat", "#chore", "#delight"}, "eat", []string{"chore", "delight"}),
 		)
+	})
+
+	Describe("Add", func() {
+		var out *gbytes.Buffer
+		BeforeEach(func() {
+			out = gbytes.NewBuffer()
+		})
+		AfterEach(func() {
+			out.Close()
+		})
+		Context("given the task has regular character phrase", func() {
+			It("will have no error return and prints tasks", func() {
+				aTask := api.Task{Title: "A chore that must be completed", Order: 1}
+				args := strings.Split(aTask.Title, " ")
+				server := MockAddTaskServer{
+					AddTaskFunc: func(t api.Task) (api.Task, error) {
+						return aTask, nil
+					},
+					GetTasksFunc: func(t api.TaskType) []api.Task {
+						return []api.Task{aTask}
+					},
+				}
+				err := Add(out, server, args)
+				Expect(err).ToNot(HaveOccurred())
+				Eventually(out).Should(gbytes.Say("1"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say(aTask.Title))
+			})
+		})
 	})
 })
 
@@ -124,6 +153,14 @@ func randomTaskName() string {
 	return "task-" + randomString(10)
 }
 
-func randomWord(size int) string {
-	return randomString(size)
+type MockAddTaskServer struct {
+	AddTaskFunc  func(api.Task) (api.Task, error)
+	GetTasksFunc func(api.TaskType) []api.Task
+}
+
+func (m MockAddTaskServer) AddTask(t api.Task) (api.Task, error) {
+	return m.AddTaskFunc(t)
+}
+func (m MockAddTaskServer) GetTasks(t api.TaskType) []api.Task {
+	return m.GetTasksFunc(t)
 }
