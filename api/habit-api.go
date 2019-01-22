@@ -57,7 +57,11 @@ func (api *HabiticaAPI) Do(req *http.Request, responseType interface{}) error {
 	res, err := api.client.Do(req)
 	if err != nil {
 		api.logger.Errorln("Request failed on do ", err)
-		return NewGoHabitsError(err.Error(), 1, "")
+		statusCode := 1
+		if res != nil {
+			statusCode = res.StatusCode
+		}
+		return NewGoHabitsError(err.Error(), statusCode, "")
 	}
 
 	body := api.readBody(res)
@@ -84,7 +88,7 @@ func (api *HabiticaAPI) parseResponse(body []byte, res *http.Response, object in
 		if err != nil {
 			api.logger.Debugln("Unmarshal habitica response failed", string(body))
 			api.logger.Errorln(err)
-			return NewGoHabitsError("Unmarshal habitica response failed", 1, res.Request.URL.EscapedPath())
+			return NewGoHabitsError("Unmarshal habitica response failed", res.StatusCode, res.Request.URL.EscapedPath())
 		}
 	}
 
@@ -115,7 +119,7 @@ type habiticaResponse struct {
 }
 
 func parseHabitsServerError(hres habiticaResponse, res *http.Response) error {
-	errMessage := hres.Error + "\n" + hres.Message
+	errMessage := hres.Message
 	for _, errorMessage := range hres.Errors {
 		errMessage += "\n" + errorMessage.Message
 	}
@@ -151,4 +155,10 @@ func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObje
 	}
 
 	return api.Do(req, responseObject)
+}
+
+// Delete will take an url, and response as a struct and output errors for marshalling either.
+func (api *HabiticaAPI) Delete(route string) error {
+	req, _ := http.NewRequest("DELETE", api.hostURL+"/v3"+route, nil)
+	return api.Do(req, nil)
 }

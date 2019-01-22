@@ -136,6 +136,21 @@ var _ = Describe("Habitica API Router", func() {
 		})
 	})
 
+	Describe("when doing a DELETE", func() {
+		It("will parase request object and return the parse response object", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/v3/resource"),
+					ghttp.RespondWith(http.StatusOK, nil),
+				),
+			)
+
+			err := habitapi.Delete("/resource")
+
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
 	Context("when recieving errors from API", func() {
 		Describe("and errors are HTTP status errors", func() {
 			errorStatuses := []int{
@@ -176,7 +191,7 @@ var _ = Describe("Habitica API Router", func() {
 
 				Expect(habitErr).To(HaveOccurred())
 				Expect(habitErr.StatusCode).To(Equal(401))
-				Expect(habitErr.Error()).To(Equal("NotAuthorized\nMissing authentication headers."))
+				Expect(habitErr.Error()).To(Equal("Missing authentication headers."))
 				Expect(habitErr.Path).To(Equal("/v3/user"))
 			})
 		})

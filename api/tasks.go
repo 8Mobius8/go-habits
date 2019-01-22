@@ -145,3 +145,12 @@ func (api *HabiticaAPI) ScoreTaskUp(t Task) error {
 	err := api.Post("/tasks/"+t.ID+"/score/up", empty, empty)
 	return err
 }
+
+// DeleteTask removes a task from the habits server. Does not complete, cause
+// rewards for removing.
+func (api *HabiticaAPI) DeleteTask(t Task) error {
+	if t.ID == "" {
+		return NewGoHabitsError("Task id is empty", 1, "")
+	}
+	return api.Delete("/tasks/" + t.ID)
+}
