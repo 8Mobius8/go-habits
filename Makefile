@@ -3,7 +3,6 @@ PKG_LIST 				?= $(shell go list ./... | grep -v /vendor/)
 SERVER          ?= http://localhost:3000/api
 INTEGRATION_ENV ?= BUILD_VERSION=${BUILD_VERSION} SERVER=${SERVER}
 LDFLAGS         ?= -ldflags "-X main.version=${BUILD_VERSION}"
-DOCKER_SERVICE_LIST ?= "tests"
 
 # All build so that when `make` is called with
 # just build binary
@@ -106,7 +105,6 @@ dev-format:
 .PHONY: clean clean-dep
 clean:
 	go clean
-	docker-compose down -v -t 0
 	rm -rf **/*c.out
 
 clean-dep:

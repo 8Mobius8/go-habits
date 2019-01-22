@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"os"
+	"io"
 	"strings"
 
 	api "github.com/8Mobius8/go-habits/api"
@@ -17,26 +17,32 @@ var addCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Add a todo to Habitica",
 	Aliases: []string{"a", "a t"},
-	Run:     Add,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return Add(cmd.OutOrStdout(), habitsServer, args)
+	},
+}
+
+type AddTaskServer interface {
+	AddTask(api.Task) (api.Task, error)
+	GetTasks(api.TaskType) []api.Task
 }
 
 // Add or `go-habits add` command allows habiters to add
 // new tasks to their list of todos. When running this command
 // the format expected is like follows:
 // go-habits a {{ TaskTitle }}
-func Add(cmd *cobra.Command, args []string) {
-	client := habitsServer
-
+func Add(out io.Writer, server AddTaskServer, args []string) error {
 	t := ParseTask(args)
 
-	t, err := client.AddTask(t)
+	t, err := server.AddTask(t)
 	if err != nil {
 		log.Errorln(err)
-		os.Exit(1)
+		return err
 	}
 
-	tasks := client.GetTasks(api.TodoType)
-	printTasks(cmd.OutOrStdout(), filterTask(t.ID, tasks))
+	tasks := server.GetTasks(api.TodoType)
+	printTasks(out, filterTask(t.ID, tasks))
+	return nil
 }
 
 func filterTask(id string, tasks []api.Task) []api.Task {
