@@ -22,6 +22,8 @@ var addCmd = &cobra.Command{
 	},
 }
 
+// AddTaskServer interface handles adding and getting tasks
+// from a habits server
 type AddTaskServer interface {
 	AddTask(api.Task) (api.Task, error)
 	GetTasks(api.TaskType) []api.Task

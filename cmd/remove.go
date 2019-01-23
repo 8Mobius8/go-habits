@@ -24,11 +24,14 @@ func init() {
 	rootCmd.AddCommand(removeCmd)
 }
 
+// DeleteServer interface does everything a `TaskServer` does
+// and Deletes tasks.
 type DeleteServer interface {
 	TasksServer
 	DeleteTask(api.Task) error
 }
 
+// Remove will remove tasks by order as given in arguments from a `DeleteServer`
 func Remove(ino io.Writer, args []string, server DeleteServer) error {
 	pArg, err := strconv.Atoi(args[0])
 	if err != nil {

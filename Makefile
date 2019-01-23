@@ -70,16 +70,16 @@ test-integration: dep install
 # `ginkgo` returns mutliple `mode: atomic` lines.
 .PHONY: coverage coverage-html code-climate cc-before cc-after
 coverage: test-unit
-	cat c.out | grep --max-count=1 ^mode: > c.cov
-	cat c.out | grep -v ^mode: >> c.cov
-	mv c.cov c.out
-	go tool cover -func=c.out
+	@cat c.out | grep --max-count=1 ^mode: > c.cov
+	@cat c.out | grep -v ^mode: >> c.cov
+	@mv c.cov c.out
+	@go tool cover -func=c.out
 
 coverage-html: test-unit
-	cat c.out | grep --max-count=1 ^mode: > c.cov
-	cat c.out | grep -v ^mode: >> c.cov
-	mv c.cov c.out
-	go tool cover -html=c.out -o coverage.html
+	@cat c.out | grep --max-count=1 ^mode: > c.cov
+	@cat c.out | grep -v ^mode: >> c.cov
+	@mv c.cov c.out
+	@go tool cover -html=c.out -o coverage.html
 
 # Ordered goal to ensure cc-test-reporter is called before tests are run.
 # Ment to be run using docker or in CI.
@@ -90,7 +90,7 @@ cc-after:
 	cc-test-reporter after-build
 
 lint:
-	golint ${PKG_LIST}
+	@golint ${PKG_LIST}
 
 # Useful for development on this project. Spin up habitica API server, lint 
 # files, uses `gofmt` as linter, continuous run tests when editing go files.
