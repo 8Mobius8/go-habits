@@ -24,6 +24,7 @@ var completeCmd = &cobra.Command{
 	},
 }
 
+// TasksServer interface is able to Get, Add, and Score Up tasks
 type TasksServer interface {
 	GetTasks(api.TaskType) []api.Task
 	AddTask(api.Task) (api.Task, error)

@@ -11,18 +11,18 @@ import (
 var Say = gbytes.Say
 
 const (
-	FlowsUsername = UserName + "flows"
+	flowsUsername = UserName + "flows"
 )
 
 var _ = Describe("go-habits add todos with tags", func() {
 	BeforeEach(func() {
-		RegisterUser(HabiticaAPIURI, FlowsUsername, Password, Email)
-		SaveAPIToken(HabiticaAPIURI, FlowsUsername, Password)
+		RegisterUser(HabiticaAPIURI, flowsUsername, Password, Email)
+		SaveAPIToken(HabiticaAPIURI, flowsUsername, Password)
 		TouchConfigFile()
-		ExpectSuccessfulLogin(FlowsUsername, Password)
+		ExpectSuccessfulLogin(flowsUsername, Password)
 	})
 	AfterEach(func() {
-		DeleteUser(HabiticaAPIURI, FlowsUsername, Password, "go-habits integration test")
+		DeleteUser(HabiticaAPIURI, flowsUsername, Password, "go-habits integration test")
 	})
 
 	var s *gexec.Session
