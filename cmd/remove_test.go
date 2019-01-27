@@ -10,12 +10,14 @@ import (
 
 var _ = Describe("Remove cmd", func() {
 	Context("when api returns successful task return and deletion", func() {
-		var out *gbytes.Buffer
+		var out, in *gbytes.Buffer
 		BeforeEach(func() {
 			out = gbytes.NewBuffer()
+			in = gbytes.NewBuffer()
 		})
 		AfterEach(func() {
 			out.Close()
+			in.Close()
 		})
 		It("prints 'Removed Tasks' and lists them", func() {
 			aTask := api.Task{
@@ -31,7 +33,8 @@ var _ = Describe("Remove cmd", func() {
 				},
 			}
 
-			err := cmd.Remove(out, []string{"1"}, server)
+			cmd.ForceRemove = true
+			err := cmd.Remove(in, out, []string{"1"}, server)
 			Expect(err).ToNot(HaveOccurred())
 			Eventually(out).Should(gbytes.Say("Removed tasks:"))
 			Eventually(out).Should(gbytes.Say(aTask.Title))
