@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -18,9 +19,7 @@ var completeCmd = &cobra.Command{
 	Short: "Mark tasks as complete using this command.",
 	Long:  `Mark tasks as complete using this command.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		out, err := Complete(habitsServer, args)
-		cmd.Println(out)
-		return err
+		return Complete(cmd.OutOrStdout(), habitsServer, args)
 	},
 }
 
@@ -35,27 +34,26 @@ type TasksServer interface {
 // todos on their existing list. `complete` task in a interger
 // number representing the position of the todo they would like
 // to complete.
-func Complete(ts TasksServer, args []string) (string, error) {
-	out := ""
+func Complete(out io.Writer, ts TasksServer, args []string) error {
 	parseArg, err := strconv.Atoi(args[0])
 	t, err := GetTaskAtPosition(ts, parseArg-1)
 	if err != nil {
 		if strings.Contains(err.Error(), "no tasks") {
-			out += "You have no tasks.\n"
-			out += "Create tasks before trying to complete them."
+			fmt.Fprintln(out, "You have no tasks.")
+			fmt.Fprintln(out, "Create tasks before trying to complete them.")
 		} else if strings.Contains(err.Error(), "bad index") {
-			out += fmt.Sprintf("There is no task at %d", parseArg)
+			fmt.Fprintf(out, "There is no task at %d", parseArg)
 		}
-		return out, api.NewGoHabitsError(err.Error(), 1, "")
+		return api.NewGoHabitsError(err.Error(), 1, "")
 	}
 
 	err = ts.ScoreTaskUp(t)
 	if err != nil {
-		err = api.NewGoHabitsError(err.Error(), 1, "")
-		return err.Error(), err
+		return err
 	}
 	t.Completed = true
-	return formatTask(t), nil
+	fmt.Fprintln(out, formatTask(t))
+	return nil
 }
 
 // GetTaskAtPosition returns todo from task server at a given position or

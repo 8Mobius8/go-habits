@@ -1,10 +1,11 @@
-package cmd
+package cmd_test
 
 import (
 	"math/rand"
 	"strings"
 
 	api "github.com/8Mobius8/go-habits/api"
+	"github.com/8Mobius8/go-habits/cmd"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -12,12 +13,12 @@ import (
 )
 
 var _ = Describe("Add command", func() {
-	Describe("filterTask", func() {
+	Describe("FilterTask", func() {
 		Context("given an empty id with some tasks", func() {
 			It("should return empty array", func() {
 				id := ""
 				tasks := generateTasks(5)
-				filtered := filterTask(id, tasks)
+				filtered := cmd.FilterTask(id, tasks)
 				Expect(filtered).Should(BeEmpty())
 			})
 		})
@@ -28,39 +29,9 @@ var _ = Describe("Add command", func() {
 
 				tasks[2].ID = id
 
-				filtered := filterTask(id, tasks)
+				filtered := cmd.FilterTask(id, tasks)
 				Expect(filtered).Should(HaveLen(1))
 				Expect(filtered[0].ID).Should(Equal(id))
-			})
-		})
-	})
-
-	Describe("parseTaskTitle", func() {
-		Context("given a single word as arguments", func() {
-			It("should return the title as the word", func() {
-				args := []string{"eat"}
-				title := parseTaskTitle(args)
-
-				Expect(title).To(Equal("eat"))
-			})
-		})
-
-		Context("given a multiple words as arguments", func() {
-			It("should return the title as the words separated by spaces", func() {
-				args := []string{"eat", "breakfast"}
-				title := parseTaskTitle(args)
-
-				Expect(title).To(MatchRegexp(strings.Join(args, " ")))
-			})
-		})
-
-		Context("given words and tags as arguments", func() {
-			It("should return with title and tags set", func() {
-				args := []string{"eat", "breakfast", "#health"}
-				task := ParseTask(args)
-
-				Expect(task.Title).To(MatchRegexp(strings.Join(args[0:2], " ")))
-				Expect(task.Tags).To(ContainElement("health"))
 			})
 		})
 	})
@@ -68,7 +39,7 @@ var _ = Describe("Add command", func() {
 	Describe("ParseTask", func() {
 		DescribeTable("should return a task with it's title set",
 			func(args []string, expectedTitle string) {
-				task := ParseTask(args)
+				task := cmd.ParseTask(args)
 				Expect(task).To(Equal(api.Task{Title: expectedTitle, Type: api.TodoType.String()}))
 			},
 			Entry("when given a single word", []string{"eat"}, "eat"),
@@ -78,7 +49,7 @@ var _ = Describe("Add command", func() {
 
 		DescribeTable("should return a task with it's title and tags set",
 			func(args []string, expectedTitle string, expectedTags []string) {
-				task := ParseTask(args)
+				task := cmd.ParseTask(args)
 				Expect(task).To(Equal(api.Task{Title: expectedTitle, Tags: expectedTags, Type: api.TodoType.String()}))
 			},
 			Entry("when given a single word and single tag", []string{"eat", "#chore"}, "eat", []string{"chore"}),
@@ -107,7 +78,7 @@ var _ = Describe("Add command", func() {
 						return []api.Task{aTask}
 					},
 				}
-				err := Add(out, server, args)
+				err := cmd.Add(out, server, args)
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(out).Should(gbytes.Say("1"))
 				Eventually(out).Should(gbytes.Say("[ ]"))

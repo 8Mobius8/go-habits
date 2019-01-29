@@ -17,15 +17,22 @@ var listCmd = &cobra.Command{
 	Use:     "list",
 	Short:   "List todos",
 	Aliases: []string{"l", "l t"},
-	Run:     List,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return List(cmd.OutOrStdout(), habitsServer, args)
+	},
+}
+
+// ListServer interface GetTasks will return []Task
+type ListServer interface {
+	GetTasks(api.TaskType) []api.Task
 }
 
 // List or `go-habits list` command allows habiters to see
 // their list of todos currently needing to be completed.
-func List(cmd *cobra.Command, args []string) {
-	apiClient := habitsServer
-	tasks := apiClient.GetTasks(api.TodoType)
-	printTasks(cmd.OutOrStdout(), tasks)
+func List(out io.Writer, server ListServer, args []string) error {
+	tasks := server.GetTasks(api.TodoType)
+	printTasks(out, tasks)
+	return nil
 }
 
 func printTasks(out io.Writer, tasks []api.Task) {

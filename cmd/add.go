@@ -43,18 +43,8 @@ func Add(out io.Writer, server AddTaskServer, args []string) error {
 	}
 
 	tasks := server.GetTasks(api.TodoType)
-	printTasks(out, filterTask(t.ID, tasks))
+	printTasks(out, FilterTask(t.ID, tasks))
 	return nil
-}
-
-func filterTask(id string, tasks []api.Task) []api.Task {
-	var filtered []api.Task
-	for _, task := range tasks {
-		if task.ID == id {
-			filtered = append(filtered, task)
-		}
-	}
-	return filtered
 }
 
 // ParseTask parses an api.Task from []string
@@ -72,6 +62,17 @@ func ParseTask(args []string) api.Task {
 	t := api.NewTask(parseTaskTitle(titleArgs), api.TodoType)
 	t.Tags = parseTags(tagsArgs)
 	return t
+}
+
+// FilterTask will filter a array of tasks by id.
+func FilterTask(id string, tasks []api.Task) []api.Task {
+	var filtered []api.Task
+	for _, task := range tasks {
+		if task.ID == id {
+			filtered = append(filtered, task)
+		}
+	}
+	return filtered
 }
 
 func parseTaskTitle(args []string) string {

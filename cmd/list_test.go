@@ -1,34 +1,124 @@
-package cmd
+package cmd_test
 
 import (
 	api "github.com/8Mobius8/go-habits/api"
+	"github.com/8Mobius8/go-habits/cmd"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 )
 
+type MockListServer struct {
+	GetTasksFunc func(api.TaskType) []api.Task
+}
+
+func (s MockListServer) GetTasks(tt api.TaskType) []api.Task {
+	return s.GetTasksFunc(tt)
+}
+
 var _ = Describe("List command", func() {
-	Describe("formatTask", func() {
-		Context("given a task without tags", func() {
-			It("will return a formated string with the values filled in", func() {
-				t := api.Task{}
-				t.ID = randomID()
-				t.Order = 1
-				t.Title = " a simple task I need to complete"
+	Describe("List", func() {
+		var out *gbytes.Buffer
+		BeforeEach(func() {
+			out = gbytes.NewBuffer()
+		})
+		Context("given a task from the server", func() {
+			It("should print formated task", func() {
+				mockServer := MockListServer{
+					func(tt api.TaskType) []api.Task {
+						task := api.Task{
+							Title: "Some Task",
+							Order: 1,
+						}
+						return []api.Task{task}
+					},
+				}
 
-				Expect(formatTask(t)).Should(MatchRegexp(`[0-9]+\[ \] [\s\w]+`))
+				cmd.List(out, mockServer, []string{})
+				Eventually(out).Should(gbytes.Say("1"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say("Some Task"))
 			})
 		})
-		Context("given a task with tags", func() {
-			It("will return a formated string with the values filled in", func() {
-				t := api.Task{}
-				t.ID = randomID()
-				t.Order = 1
-				t.Title = " a simple task I need to complete"
-				t.Tags = []string{"misc", "uncategorised"}
+		Context("given several tasks", func() {
+			It("should print several tasks", func() {
+				mockServer := MockListServer{
+					func(tt api.TaskType) []api.Task {
+						task := api.Task{
+							Title: "Some Task",
+							Order: 1,
+						}
+						task2 := task
+						task2.Order = 2
+						task3 := task2
+						task3.Order = 3
+						return []api.Task{task, task2, task3}
+					},
+				}
 
-				Expect(formatTask(t)).Should(MatchRegexp(`[0-9]+\[ \] [\s\w]+ (#[\w]+ )+`))
+				cmd.List(out, mockServer, []string{})
+				Eventually(out).Should(gbytes.Say("1"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say("Some Task"))
+				Eventually(out).Should(gbytes.Say("2"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say("Some Task"))
+				Eventually(out).Should(gbytes.Say("3"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say("Some Task"))
 			})
 		})
+		Context("given a task with a tag from the server", func() {
+			It("should print formated task", func() {
+				mockServer := MockListServer{
+					func(tt api.TaskType) []api.Task {
+						task := api.Task{
+							Title: "Some Task",
+							Order: 1,
+							Tags:  []string{"tag"},
+						}
+						return []api.Task{task}
+					},
+				}
 
+				cmd.List(out, mockServer, []string{})
+				Eventually(out).Should(gbytes.Say("1"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say("Some Task"))
+				Eventually(out).Should(gbytes.Say("#tag"))
+			})
+		})
+		Context("given several tasks with a tag from the server", func() {
+			It("should print the formated tasks", func() {
+				mockServer := MockListServer{
+					func(tt api.TaskType) []api.Task {
+						task := api.Task{
+							Title: "Some Task",
+							Order: 1,
+							Tags:  []string{"tag"},
+						}
+						task2 := task
+						task2.Order = 2
+						task3 := task2
+						task3.Order = 3
+						return []api.Task{task, task2, task3}
+					},
+				}
+
+				cmd.List(out, mockServer, []string{})
+				Eventually(out).Should(gbytes.Say("1"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say("Some Task"))
+				Eventually(out).Should(gbytes.Say("#tag"))
+				Eventually(out).Should(gbytes.Say("2"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say("Some Task"))
+				Eventually(out).Should(gbytes.Say("#tag"))
+				Eventually(out).Should(gbytes.Say("3"))
+				Eventually(out).Should(gbytes.Say("[ ]"))
+				Eventually(out).Should(gbytes.Say("Some Task"))
+				Eventually(out).Should(gbytes.Say("#tag"))
+			})
+		})
 	})
 })
