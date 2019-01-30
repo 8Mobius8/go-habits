@@ -7,24 +7,20 @@ import (
 	"github.com/onsi/gomega/gbytes"
 )
 
-type MockAuthenticateServer struct {
-	AuthenticateOut api.UserToken
-	ErrorOut        error
+type mockAuthenticateServer struct {
+	AuthenticateFunc func(user, password string) (api.UserToken, error)
 }
 
-func (ms MockAuthenticateServer) Authenticate(user, password string) (api.UserToken, error) {
-	return ms.AuthenticateOut, ms.ErrorOut
+func (m mockAuthenticateServer) Authenticate(user, password string) (api.UserToken, error) {
+	return m.AuthenticateFunc(user, password)
 }
 
 var _ = Describe("Login cmd", func() {
 	Describe("Login", func() {
 		var in, out *gbytes.Buffer
-		var mockServer MockAuthenticateServer
-
 		BeforeEach(func() {
 			in = gbytes.NewBuffer()
 			out = gbytes.NewBuffer()
-			mockServer = MockAuthenticateServer{}
 		})
 		AfterEach(func() {
 			in.Close()
@@ -35,7 +31,12 @@ var _ = Describe("Login cmd", func() {
 				UserName: "username",
 				Password: "password",
 			}
-			mockServer.AuthenticateOut = expectedCreds
+			mockServer := mockAuthenticateServer{
+				func(user, password string) (api.UserToken, error) {
+					return expectedCreds, nil
+				},
+			}
+
 			Login(in, out, mockServer, []string{})
 
 			Eventually(out).Should(gbytes.Say("Username:"))

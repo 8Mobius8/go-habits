@@ -10,10 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	ForceRemove bool
-)
-
 // removeCmd represents the remove command
 var removeCmd = &cobra.Command{
 	Use:   "remove",
@@ -22,12 +18,16 @@ var removeCmd = &cobra.Command{
 You will not recieve and awards for removing tasks.`,
 	Aliases: []string{"remove todo", "rm t", "rm"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return Remove(os.Stdin, cmd.OutOrStdout(), args, habitsServer)
+		return Remove(os.Stdin, cmd.OutOrStdout(), args, habitsServer, forceRemove)
 	},
 }
 
+var (
+	forceRemove bool
+)
+
 func init() {
-	removeCmd.Flags().BoolVarP(&ForceRemove, "force", "f", false, "Remove task without confirmation")
+	removeCmd.Flags().BoolVarP(&forceRemove, "force", "f", false, "Remove task without confirmation")
 	rootCmd.AddCommand(removeCmd)
 }
 
@@ -39,7 +39,7 @@ type DeleteServer interface {
 }
 
 // Remove will remove tasks by order as given in arguments from a `DeleteServer`
-func Remove(in io.Reader, ino io.Writer, args []string, server DeleteServer) error {
+func Remove(in io.Reader, ino io.Writer, args []string, server DeleteServer, force bool) error {
 	pArg, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err
@@ -49,16 +49,18 @@ func Remove(in io.Reader, ino io.Writer, args []string, server DeleteServer) err
 		return err
 	}
 
-	if !ForceRemove {
+	answer := "n"
+	if !force {
 		fmt.Fprintln(ino, "Remove?")
 		fmt.Fprintf(ino, "%s [Y\\n]?", formatTask(t))
-		answer := "n"
 		fmt.Fscanln(in, &answer)
 	}
 
-	err = server.DeleteTask(t)
-	if err != nil {
-		return err
+	if answer == "Y" {
+		err = server.DeleteTask(t)
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Fprintln(ino, "Removed tasks:")

@@ -1,14 +1,14 @@
-package cmd
+package cmd_test
 
 import (
+	"errors"
 	"io"
 
 	"github.com/8Mobius8/go-habits/api"
+	"github.com/8Mobius8/go-habits/cmd"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/ghttp"
-	"github.com/spf13/cobra"
 )
 
 var StatusUpResponse = `{
@@ -25,72 +25,76 @@ var _ = Describe("Status cmd", func() {
 			var resp api.Status
 			resp.Status = "up"
 
-			Expect(StatusMessage(resp)).To(Equal("Habitica is reachable, GO catch all those pets!"))
+			Expect(cmd.StatusMessage(resp)).To(Equal("Habitica is reachable, GO catch all those pets!"))
 		})
 
 		It("returns the sad when Habitica is unreachable.", func() {
 			var resp api.Status
 			resp.Status = "down"
 
-			Expect(StatusMessage(resp)).To(Equal(":( Habitica is unreachable."))
+			Expect(cmd.StatusMessage(resp)).To(Equal(":( Habitica is unreachable."))
 		})
-	})
-
-	It("returns string with out habitica reachable.", func() {
-		server.AppendHandlers(
-			ghttp.CombineHandlers(
-				ghttp.VerifyRequest("GET", "/v3/status"),
-				ghttp.RespondWith(200, StatusUpResponse),
-			),
-		)
-		out, err := Status()
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(out).To(ContainSubstring("Habitica is reachable, GO catch all those pets!"))
-	})
-
-	It("returns err status code 5 when server return down", func() {
-		server.SetAllowUnhandledRequests(true)
-		out, err := Status()
-		Expect(err).Should(HaveOccurred())
-		Expect(out).To(ContainSubstring("Habitica is unreachable"))
-		ghe := err.(*api.GoHabitsError)
-		Expect(ghe.StatusCode).To(Equal(5))
 	})
 })
 
+type MockStatusServer struct {
+	GetServerStatusFunc func() (api.Status, error)
+	GetHostURLFunc      func() string
+}
+
+func (m MockStatusServer) GetServerStatus() (api.Status, error) {
+	return m.GetServerStatusFunc()
+}
+
+func (m MockStatusServer) GetHostURL() string {
+	return m.GetHostURLFunc()
+}
+
 var _ = Describe("Command integration tests", func() {
 	Describe("Status command", func() {
-		var buf *gbytes.Buffer
-		var mockCmd *cobra.Command
 		var out io.Writer
 		BeforeEach(func() {
-			buf = gbytes.NewBuffer()
-			mockCmd = &cobra.Command{}
-			mockCmd.SetOutput(buf)
-			out = mockCmd.OutOrStdout()
+			out = gbytes.NewBuffer()
 		})
 		It("will print to out to correct string when status is down", func() {
-			server.SetAllowUnhandledRequests(true)
+			mockServer := MockStatusServer{
+				GetServerStatusFunc: func() (api.Status, error) {
+					return api.Status{}, errors.New("Server is not available")
+				},
+				GetHostURLFunc: func() string {
+					return "https://habitica.com/api"
+				},
+			}
 
-			_ = statusCmd.RunE(mockCmd, []string{})
+			cmd.Status(out, mockServer)
 			Eventually(out).Should(gbytes.Say("Habitica is unreachable."))
 		})
 		It("will return error with status code = 5 when status is down", func() {
-			server.SetAllowUnhandledRequests(true)
+			mockServer := MockStatusServer{
+				GetServerStatusFunc: func() (api.Status, error) {
+					return api.Status{}, api.NewGoHabitsError("Server is not available", 500, "/status")
+				},
+				GetHostURLFunc: func() string {
+					return "https://habitica.com/api"
+				},
+			}
 
-			err := statusCmd.RunE(mockCmd, []string{})
+			err := cmd.Status(out, mockServer)
 			ghe := err.(*api.GoHabitsError)
 			Expect(ghe.StatusCode).To(Equal(5))
 		})
 		It("will print to out to correct string when status is up", func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/v3/status"),
-					ghttp.RespondWith(200, StatusUpResponse),
-				),
-			)
+			mockServer := MockStatusServer{
+				GetServerStatusFunc: func() (api.Status, error) {
+					return api.Status{Status: "up"}, nil
+				},
+				GetHostURLFunc: func() string {
+					return "https://habitica.com/api"
+				},
+			}
 
-			_ = statusCmd.RunE(mockCmd, []string{})
+			err := cmd.Status(out, mockServer)
+			Expect(err).ShouldNot(HaveOccurred())
 			Eventually(out).Should(gbytes.Say("Habitica is reachable."))
 		})
 	})

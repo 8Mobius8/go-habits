@@ -25,14 +25,16 @@ var loginCmd = &cobra.Command{
 	},
 }
 
-type authServer interface {
+// Authenticator small interface for Authenticating users by password
+// and username to return a Token
+type Authenticator interface {
 	Authenticate(string, string) (api.UserToken, error)
 }
 
 // Login or `go-habits login` allows habiters to logon to a
 // habitica server and save their api id and token to a config
 // file. The file must be previously created.
-func Login(in io.Reader, out io.Writer, as authServer, args []string) {
+func Login(in io.Reader, out io.Writer, as Authenticator, args []string) {
 	user := scanForUserCreds(in, out)
 	creds, _ := as.Authenticate(user.UserName, user.Password)
 	fmt.Fprintln(out, "Login Successful <3")
