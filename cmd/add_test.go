@@ -1,7 +1,9 @@
 package cmd_test
 
 import (
+	"io/ioutil"
 	"math/rand"
+	"os"
 	"strings"
 
 	api "github.com/8Mobius8/go-habits/api"
@@ -58,6 +60,78 @@ var _ = Describe("Add command", func() {
 		)
 	})
 
+	Describe("ParseTasksFromFile contents of file and parse tasks", func() {
+		var taskfileName string
+		var fileContents string
+		JustBeforeEach(func() {
+			taskfileName = randomTaskFileName()
+			err := ioutil.WriteFile(taskfileName, []byte(fileContents), 0644)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+		AfterEach(func() {
+			err := os.Remove(taskfileName)
+			if err != nil {
+				if os.IsNotExist(err) {
+					return
+				}
+			}
+			Expect(err).ShouldNot(HaveOccurred())
+			fileContents = ""
+		})
+		Context("when a single task is inside the file", func() {
+			BeforeEach(func() {
+				fileContents = "[ ] soak dreams in coke-a-cola"
+			})
+			It("no error and returns correct task name", func() {
+				t, err := cmd.ParseTasksFromFile(taskfileName)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(t)).To(Equal(1))
+				Expect(t[0].Title).To(Equal("soak dreams in coke-a-cola"))
+			})
+		})
+		Context("when a random task is inside the file", func() {
+			var expectedName string
+			BeforeEach(func() {
+				expectedName = randomTaskName()
+				fileContents = "[ ] " + expectedName
+			})
+			It("no error and returns correct task name", func() {
+				t, err := cmd.ParseTasksFromFile(taskfileName)
+				Expect(len(t)).To(Equal(1))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(t[0].Title).To(Equal(expectedName))
+			})
+		})
+		Context("when 5 random task is inside the file", func() {
+			var expectedNames = []string{}
+			BeforeEach(func() {
+				for i := 0; i < 5; i++ {
+					taskName := randomTaskName()
+					expectedNames = append(expectedNames, taskName)
+					fileContents += "[ ] " + taskName + "\n"
+				}
+			})
+			It("no error and returns correct task names", func() {
+				t, err := cmd.ParseTasksFromFile(taskfileName)
+				Expect(len(t)).To(Equal(len(expectedNames)))
+				Expect(err).ShouldNot(HaveOccurred())
+				for i := 0; i < 5; i++ {
+					Expect(t[i].Title).To(Equal(expectedNames[i]))
+				}
+			})
+		})
+		Context("when a bad line is inside the file", func() {
+			BeforeEach(func() {
+				fileContents = "bad line" + randomTaskName()
+			})
+			It("Will return with an empty list", func() {
+				t, err := cmd.ParseTasksFromFile(taskfileName)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(len(t)).To(Equal(0))
+			})
+		})
+	})
+
 	Describe("Add", func() {
 		var out *gbytes.Buffer
 		BeforeEach(func() {
@@ -78,7 +152,7 @@ var _ = Describe("Add command", func() {
 						return []api.Task{aTask}
 					},
 				}
-				err := cmd.Add(out, server, args)
+				err := cmd.Add(out, server, args, "")
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(out).Should(gbytes.Say("1"))
 				Eventually(out).Should(gbytes.Say("[ ]"))
@@ -122,6 +196,10 @@ func randomString(l int) string {
 
 func randomTaskName() string {
 	return "task-" + randomString(10)
+}
+
+func randomTaskFileName() string {
+	return "taskfile" + randomString(5) + ".txt"
 }
 
 type MockAddTaskServer struct {

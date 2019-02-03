@@ -46,12 +46,12 @@ install:
 	go install ${LDFLAGS}
 
 # Runs full test suite
-.PHONY: test test-unit test-integration
+.PHONY: test test-unit test-unit-randomly test-integration
 test:	test-unit test-integration
 
 test-unit: dep
-	rm -f c.out
-	ginkgo \
+	@rm -f c.out
+	@ginkgo \
 	-randomizeAllSpecs -randomizeSuites \
 	-failOnPending \
 	-trace \
@@ -62,6 +62,15 @@ test-unit: dep
 	-r \
 	.
 
+# Use this to run all unit tests randomly many times
+test-unit-randomly: 
+	@ginkgo \
+	-randomizeAllSpecs -randomizeSuites \
+	-skipPackage integration \
+	-r \
+	-untilItFails -p \
+	.
+	
 test-integration: dep install
 	${INTEGRATION_ENV} ./integration/wait-for-habitica-api.sh
 	${INTEGRATION_ENV} ginkgo -r --trace --progress ./integration

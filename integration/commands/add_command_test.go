@@ -1,6 +1,9 @@
 package commands
 
 import (
+	"io/ioutil"
+	"os"
+
 	. "github.com/8Mobius8/go-habits/integration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,7 +27,7 @@ var _ = Describe("go-habits add command", func() {
 			RemoveConfigFile()
 		})
 
-		Describe("Creating a new todo", func() {
+		Describe("Creating a new todo interactively", func() {
 			It("will print newly created task as confirmation", func() {
 				s := GoHabits("add", "clean my fishbowl")
 				Eventually(s).Should(gbytes.Say("clean my fishbowl"))
@@ -47,5 +50,36 @@ var _ = Describe("go-habits add command", func() {
 				Eventually(s).Should(gexec.Exit(0))
 			})
 		})
+
+		Describe("Creating a new todo using file", func() {
+			tasksFile := "tasks.txt"
+			BeforeEach(func() {
+				AddTaskToFile(tasksFile, "A new task")
+			})
+			AfterEach(func() {
+				RemoveTaskFile(tasksFile)
+			})
+
+			It("will print new created task as confirmation", func() {
+				s := GoHabits("add", "-f", "tasks.txt", "--log", "debug")
+				Eventually(s).Should(gbytes.Say("A new task"))
+				Eventually(s).Should(gexec.Exit(0))
+			})
+		})
 	})
 })
+
+func AddTaskToFile(filePath, taskTitle string) {
+	err := ioutil.WriteFile(filePath, []byte("[ ] "+taskTitle+"\n"), 0644)
+	Expect(err).ShouldNot(HaveOccurred())
+}
+
+func RemoveTaskFile(filePath string) {
+	err := os.Remove(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return
+		}
+	}
+	Expect(err).ShouldNot(HaveOccurred())
+}

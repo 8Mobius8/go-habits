@@ -1,15 +1,25 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
+	"io/ioutil"
+	"regexp"
 	"strings"
 
 	api "github.com/8Mobius8/go-habits/api"
-	log "github.com/amoghe/distillog"
 	"github.com/spf13/cobra"
 )
 
+var (
+	file string
+	// TaskLine is the Perl regular expression `(?m)^\\[ \\] (.*)$`
+	// `(?m)` sets flags so that `^` `$` match line beginning endings.
+	TaskLine = regexp.MustCompile("(?m)^\\[ \\] (.*)$")
+)
+
 func init() {
+	addCmd.Flags().StringVarP(&file, "file", "f", "", "File name to parse for tasks")
 	rootCmd.AddCommand(addCmd)
 }
 
@@ -18,7 +28,7 @@ var addCmd = &cobra.Command{
 	Short:   "Add a todo to Habitica",
 	Aliases: []string{"a", "a t"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return Add(cmd.OutOrStdout(), habitsServer, args)
+		return Add(cmd.OutOrStdout(), habitsServer, args, file)
 	},
 }
 
@@ -33,17 +43,33 @@ type AddTaskServer interface {
 // new tasks to their list of todos. When running this command
 // the format expected is like follows:
 // go-habits a {{ TaskTitle }}
-func Add(out io.Writer, server AddTaskServer, args []string) error {
-	t := ParseTask(args)
+func Add(out io.Writer, server AddTaskServer, args []string, filePath string) error {
+	var tasks []api.Task
+	var err error
 
-	t, err := server.AddTask(t)
+	if filePath != "" {
+		tasks, err = ParseTasksFromFile(filePath)
+	} else {
+		tasks = []api.Task{ParseTask(args)}
+	}
 	if err != nil {
-		log.Errorln(err)
 		return err
 	}
 
-	tasks := server.GetTasks(api.TodoType)
-	printTasks(out, FilterTask(t.ID, tasks))
+	ids := []string{}
+	for _, t := range tasks {
+		tt, err := server.AddTask(t)
+		if err != nil {
+			fmt.Fprintln(out, err)
+			continue
+		}
+		ids = append(ids, tt.ID)
+	}
+
+	tasks = server.GetTasks(api.TodoType)
+	for _, id := range ids {
+		printTasks(out, FilterTask(id, tasks))
+	}
 	return nil
 }
 
@@ -73,6 +99,27 @@ func FilterTask(id string, tasks []api.Task) []api.Task {
 		}
 	}
 	return filtered
+}
+
+// ParseTasksFromFile will return an array of tasks that matches
+// `TaskLine` in the file given, line by line.
+func ParseTasksFromFile(filePath string) ([]api.Task, error) {
+	tasks := []api.Task{}
+
+	dat, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return []api.Task{}, err
+	}
+
+	// Using FindAll to get just the lines that have
+	// tasks in them.
+	lines := TaskLine.FindAll(dat, -1)
+	for _, line := range lines {
+		t := api.NewTask(strings.TrimLeft(string(line), "[ ]"), api.TodoType)
+		tasks = append(tasks, t)
+	}
+
+	return tasks, nil
 }
 
 func parseTaskTitle(args []string) string {
