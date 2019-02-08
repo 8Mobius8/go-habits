@@ -5,23 +5,16 @@ import (
 	log "github.com/8Mobius8/go-habits/log"
 	"github.com/8Mobius8/go-habits/log/levels"
 	dlog "github.com/amoghe/distillog"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
-var defaultGoHabitsConfigPath string
+
 var habitsServer *api.HabiticaAPI
 var habitsServerURL string
 
 // logLevel is set from flag on root command in root.go
 var logLevel string
-
-// init will gather system info to run go-habits cmd on.
-func init() {
-	userHomePath, _ := homedir.Dir()
-	defaultGoHabitsConfigPath = userHomePath + "/.go-habits.yml"
-}
 
 // setupAPIClient creates a new API client for running go-habits cmd.
 // Uses logLevel variable to determine how to configure API client

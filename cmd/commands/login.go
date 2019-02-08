@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -7,22 +7,16 @@ import (
 	"os"
 
 	api "github.com/8Mobius8/go-habits/api"
-	"github.com/spf13/cobra"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
-func init() {
-	rootCmd.AddCommand(loginCmd)
-}
+var defaultGoHabitsConfigPath string
 
-var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Authenicates with Habits server and saves api token in config file.",
-	Long: "Authenicates with Habits server and saves api token in config file.\n" +
-		"You will need create an account on https://habitica.com",
-	Run: func(cmd *cobra.Command, args []string) {
-		Login(os.Stdin, cmd.OutOrStdout(), habitsServer, args)
-	},
+// init will gather system info to run go-habits cmd on.
+func init() {
+	userHomePath, _ := homedir.Dir()
+	defaultGoHabitsConfigPath = userHomePath + "/.go-habits.yml"
 }
 
 // Authenticator small interface for Authenticating users by password

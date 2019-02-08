@@ -1,8 +1,8 @@
-package cmd_test
+package commands_test
 
 import (
 	"github.com/8Mobius8/go-habits/api"
-	"github.com/8Mobius8/go-habits/cmd"
+	cmd "github.com/8Mobius8/go-habits/cmd/commands"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"

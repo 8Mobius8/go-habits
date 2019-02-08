@@ -1,4 +1,4 @@
-package cmd_test
+package commands_test
 
 import (
 	"io/ioutil"
@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	api "github.com/8Mobius8/go-habits/api"
-	"github.com/8Mobius8/go-habits/cmd"
+	cmd "github.com/8Mobius8/go-habits/cmd/commands"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

@@ -1,26 +1,11 @@
-package cmd
+package commands
 
 import (
 	"fmt"
 	"io"
 
 	api "github.com/8Mobius8/go-habits/api"
-
-	"github.com/spf13/cobra"
 )
-
-func init() {
-	rootCmd.AddCommand(statusCmd)
-}
-
-var statusCmd = &cobra.Command{
-	Use:     "status",
-	Short:   "Check if Habitica api is reachable.",
-	Aliases: []string{"s"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return Status(cmd.OutOrStdout(), habitsServer)
-	},
-}
 
 // StatusServer is an interface for habitica server that has
 // an Server status

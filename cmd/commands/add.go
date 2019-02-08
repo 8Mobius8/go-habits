@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -8,29 +8,11 @@ import (
 	"strings"
 
 	api "github.com/8Mobius8/go-habits/api"
-	"github.com/spf13/cobra"
 )
 
-var (
-	file string
-	// TaskLine is the Perl regular expression `(?m)^\\[ \\] (.*)$`
-	// `(?m)` sets flags so that `^` `$` match line beginning endings.
-	TaskLine = regexp.MustCompile("(?m)^\\[ \\] (.*)$")
-)
-
-func init() {
-	addCmd.Flags().StringVarP(&file, "file", "f", "", "File name to parse for tasks")
-	rootCmd.AddCommand(addCmd)
-}
-
-var addCmd = &cobra.Command{
-	Use:     "add",
-	Short:   "Add a todo to Habitica",
-	Aliases: []string{"a", "a t"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return Add(cmd.OutOrStdout(), habitsServer, args, file)
-	},
-}
+// TaskLine is the Perl regular expression `(?m)^\\[ \\] (.*)$`
+// `(?m)` sets flags so that `^` `$` match line beginning endings.
+var TaskLine = regexp.MustCompile("(?m)^\\[ \\] (.*)$")
 
 // AddTaskServer interface handles adding and getting tasks
 // from a habits server

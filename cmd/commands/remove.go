@@ -1,35 +1,12 @@
-package cmd
+package commands
 
 import (
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 
 	api "github.com/8Mobius8/go-habits/api"
-	"github.com/spf13/cobra"
 )
-
-// removeCmd represents the remove command
-var removeCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "Remove tasks from your list. Does NOT complete them.",
-	Long: `Remove tasks from your list. Does NOT complete them.
-You will not recieve and awards for removing tasks.`,
-	Aliases: []string{"remove todo", "rm t", "rm"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return Remove(os.Stdin, cmd.OutOrStdout(), args, habitsServer, forceRemove)
-	},
-}
-
-var (
-	forceRemove bool
-)
-
-func init() {
-	removeCmd.Flags().BoolVarP(&forceRemove, "force", "f", false, "Remove task without confirmation")
-	rootCmd.AddCommand(removeCmd)
-}
 
 // DeleteServer interface does everything a `TaskServer` does
 // and Deletes tasks.

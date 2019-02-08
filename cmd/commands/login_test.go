@@ -1,7 +1,8 @@
-package cmd
+package commands_test
 
 import (
 	"github.com/8Mobius8/go-habits/api"
+	"github.com/8Mobius8/go-habits/cmd/commands"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -37,7 +38,7 @@ var _ = Describe("Login cmd", func() {
 				},
 			}
 
-			Login(in, out, mockServer, []string{})
+			commands.Login(in, out, mockServer, []string{})
 
 			Eventually(out).Should(gbytes.Say("Username:"))
 			in.Write([]byte(expectedCreds.UserName + "\n"))

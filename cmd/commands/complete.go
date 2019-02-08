@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -7,21 +7,7 @@ import (
 	"strings"
 
 	api "github.com/8Mobius8/go-habits/api"
-	"github.com/spf13/cobra"
 )
-
-func init() {
-	rootCmd.AddCommand(completeCmd)
-}
-
-var completeCmd = &cobra.Command{
-	Use:   "complete",
-	Short: "Mark tasks as complete using this command.",
-	Long:  `Mark tasks as complete using this command.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return Complete(cmd.OutOrStdout(), habitsServer, args)
-	},
-}
 
 // TasksServer interface is able to Get, Add, and Score Up tasks
 type TasksServer interface {

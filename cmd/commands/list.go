@@ -1,26 +1,11 @@
-package cmd
+package commands
 
 import (
 	"fmt"
 	"io"
 
 	api "github.com/8Mobius8/go-habits/api"
-
-	"github.com/spf13/cobra"
 )
-
-func init() {
-	rootCmd.AddCommand(listCmd)
-}
-
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List todos",
-	Aliases: []string{"l", "l t"},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return List(cmd.OutOrStdout(), habitsServer, args)
-	},
-}
 
 // ListServer interface GetTasks will return []Task
 type ListServer interface {
