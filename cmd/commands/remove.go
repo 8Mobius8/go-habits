@@ -16,7 +16,7 @@ type DeleteServer interface {
 }
 
 // Remove will remove tasks by order as given in arguments from a `DeleteServer`
-func Remove(in io.Reader, ino io.Writer, args []string, server DeleteServer, force bool) error {
+func Remove(in io.Reader, out io.Writer, args []string, server DeleteServer, force bool) error {
 	pArg, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err
@@ -26,11 +26,17 @@ func Remove(in io.Reader, ino io.Writer, args []string, server DeleteServer, for
 		return err
 	}
 
-	answer := "n"
-	if !force {
-		fmt.Fprintln(ino, "Remove?")
-		fmt.Fprintf(ino, "%s [Y\\n]?", formatTask(t))
-		fmt.Fscanln(in, &answer)
+	// answer := "n"
+	// if !force {
+	// 	fmt.Fprintln(out, "Remove?")
+	// 	fmt.Fprintf(out, "%s [Y\\n]?", formatTask(t))
+	// 	fmt.Fscanln(in, &answer)
+	// }
+	var answer string
+	if force {
+		answer = "Y"
+	} else {
+		answer = getAnswer(in, out, fmt.Sprintf("%s [Y\\n]?", formatTask(t)))
 	}
 
 	if answer == "Y" {
@@ -38,9 +44,16 @@ func Remove(in io.Reader, ino io.Writer, args []string, server DeleteServer, for
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(ino, "Removed tasks:")
-		fmt.Fprintln(ino, fmt.Sprintf("%d%s %s ", t.Order, "X", t.Title))
+		fmt.Fprintln(out, "Removed tasks:")
+		fmt.Fprintln(out, fmt.Sprintf("%d%s %s ", t.Order, "X", t.Title))
 	}
 
 	return nil
+}
+
+func getAnswer(in io.Reader, out io.Writer, question string) (answer string) {
+	fmt.Fprintln(out, "Remove?")
+	fmt.Fprintln(out, question)
+	fmt.Fscanln(in, &answer)
+	return
 }
