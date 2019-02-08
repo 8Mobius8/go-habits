@@ -38,9 +38,9 @@ func Remove(in io.Reader, ino io.Writer, args []string, server DeleteServer, for
 		if err != nil {
 			return err
 		}
+		fmt.Fprintln(ino, "Removed tasks:")
+		fmt.Fprintln(ino, fmt.Sprintf("%d%s %s ", t.Order, "X", t.Title))
 	}
 
-	fmt.Fprintln(ino, "Removed tasks:")
-	fmt.Fprintln(ino, fmt.Sprintf("%d%s %s ", t.Order, "X", t.Title))
 	return nil
 }

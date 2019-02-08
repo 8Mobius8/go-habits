@@ -26,16 +26,15 @@ type AddTaskServer interface {
 // the format expected is like follows:
 // go-habits a {{ TaskTitle }}
 func Add(out io.Writer, server AddTaskServer, args []string, filePath string) error {
-	var tasks []api.Task
-	var err error
-
-	if filePath != "" {
-		tasks, err = ParseTasksFromFile(filePath)
-	} else {
-		tasks = []api.Task{ParseTask(args)}
-	}
+	tasks, err := parseTask(args, filePath)
 	if err != nil {
+		fmt.Fprintln(out, err)
 		return err
+	}
+
+	if len(tasks) <= 0 {
+		fmt.Fprintln(out, "No tasks were found")
+		return nil
 	}
 
 	ids := []string{}
@@ -55,11 +54,36 @@ func Add(out io.Writer, server AddTaskServer, args []string, filePath string) er
 	return nil
 }
 
-// ParseTask parses an api.Task from []string
-func ParseTask(args []string) api.Task {
+func parseTask(args []string, filePath string) (tasks []api.Task, err error) {
+	// If filePath set ignore arguments
+	if filePath != "" {
+		return ParseTasksFromFile(filePath)
+	}
+
+	if len(args) <= 0 {
+		err = fmt.Errorf("No arguments were given")
+		return
+	}
+
+	task := ParseTaskFromArguments(args)
+	if task.Title == "" {
+		err = fmt.Errorf("Empty text was given")
+		return
+	}
+
+	tasks = []api.Task{task}
+	return
+}
+
+// ParseTaskFromArguments parses an api.Task from []string
+func ParseTaskFromArguments(args []string) api.Task {
 	var titleArgs, tagsArgs []string
 
 	for _, arg := range args {
+		if arg == "" {
+			continue
+		}
+
 		if arg[0] == '#' {
 			tagsArgs = append(tagsArgs, arg)
 		} else {
@@ -105,6 +129,10 @@ func ParseTasksFromFile(filePath string) ([]api.Task, error) {
 }
 
 func parseTaskTitle(args []string) string {
+	if len(args) <= 0 {
+		return ""
+	}
+
 	title := args[0]
 	for _, arg := range args[1:] {
 		title += " " + arg

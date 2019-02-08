@@ -38,10 +38,10 @@ var _ = Describe("Add command", func() {
 		})
 	})
 
-	Describe("ParseTask", func() {
+	Describe("ParseTaskFromArguments", func() {
 		DescribeTable("should return a task with it's title set",
 			func(args []string, expectedTitle string) {
-				task := cmd.ParseTask(args)
+				task := cmd.ParseTaskFromArguments(args)
 				Expect(task).To(Equal(api.Task{Title: expectedTitle, Type: api.TodoType.String()}))
 			},
 			Entry("when given a single word", []string{"eat"}, "eat"),
@@ -51,7 +51,7 @@ var _ = Describe("Add command", func() {
 
 		DescribeTable("should return a task with it's title and tags set",
 			func(args []string, expectedTitle string, expectedTags []string) {
-				task := cmd.ParseTask(args)
+				task := cmd.ParseTaskFromArguments(args)
 				Expect(task).To(Equal(api.Task{Title: expectedTitle, Tags: expectedTags, Type: api.TodoType.String()}))
 			},
 			Entry("when given a single word and single tag", []string{"eat", "#chore"}, "eat", []string{"chore"}),
@@ -157,6 +157,38 @@ var _ = Describe("Add command", func() {
 				Eventually(out).Should(gbytes.Say("1"))
 				Eventually(out).Should(gbytes.Say("[ ]"))
 				Eventually(out).Should(gbytes.Say(aTask.Title))
+			})
+		})
+		Context("given no text or empty string", func() {
+			It("will return an error saying no arguments were given", func() {
+				args := []string{}
+				server := MockAddTaskServer{
+					AddTaskFunc: func(t api.Task) (api.Task, error) {
+						return api.Task{}, nil
+					},
+					GetTasksFunc: func(t api.TaskType) []api.Task {
+						return []api.Task{}
+					},
+				}
+
+				err := cmd.Add(out, server, args, "")
+				Expect(err).Should(HaveOccurred())
+				Eventually(out).Should(gbytes.Say("No arguments were given"))
+			})
+			It("will return an error saying no text were given", func() {
+				args := []string{""}
+				server := MockAddTaskServer{
+					AddTaskFunc: func(t api.Task) (api.Task, error) {
+						return api.Task{}, nil
+					},
+					GetTasksFunc: func(t api.TaskType) []api.Task {
+						return []api.Task{}
+					},
+				}
+
+				err := cmd.Add(out, server, args, "")
+				Expect(err).Should(HaveOccurred())
+				Eventually(out).Should(gbytes.Say("Empty text was given"))
 			})
 		})
 	})
