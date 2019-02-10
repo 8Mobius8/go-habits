@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
 
 	api "github.com/8Mobius8/go-habits/api"
@@ -26,20 +27,13 @@ func Remove(in io.Reader, out io.Writer, args []string, server DeleteServer, for
 		return err
 	}
 
-	// answer := "n"
-	// if !force {
-	// 	fmt.Fprintln(out, "Remove?")
-	// 	fmt.Fprintf(out, "%s [Y\\n]?", formatTask(t))
-	// 	fmt.Fscanln(in, &answer)
-	// }
-	var answer string
-	if force {
-		answer = "Y"
-	} else {
-		answer = getAnswer(in, out, fmt.Sprintf("%s [Y\\n]?", formatTask(t)))
+	deleteTask := force
+	if !force {
+		taskYorN := fmt.Sprint(formatTask(t), `[Y\n]?`)
+		deleteTask = decideYesOrNo(in, out, taskYorN)
 	}
 
-	if answer == "Y" {
+	if deleteTask {
 		err = server.DeleteTask(t)
 		if err != nil {
 			return err
@@ -51,9 +45,14 @@ func Remove(in io.Reader, out io.Writer, args []string, server DeleteServer, for
 	return nil
 }
 
+func decideYesOrNo(in io.Reader, out io.Writer, question string) bool {
+	answer := getAnswer(in, out, question)
+	matched, _ := regexp.MatchString("Y", answer)
+	return matched
+}
+
 func getAnswer(in io.Reader, out io.Writer, question string) (answer string) {
-	fmt.Fprintln(out, "Remove?")
-	fmt.Fprintln(out, question)
-	fmt.Fscanln(in, &answer)
+	fmt.Fprint(out, "Remove?\n", question)
+	fmt.Fscan(in, &answer)
 	return
 }
