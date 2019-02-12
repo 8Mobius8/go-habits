@@ -136,6 +136,36 @@ var _ = Describe("Habitica API Router", func() {
 		})
 	})
 
+	Describe("when doing a PUT", func() {
+		It("will parse request object and return parsed response object", func() {
+			type requestType struct {
+				InputA string
+				InputB int
+			}
+			requestBody := requestType{"test", 25}
+
+			body, _ := json.Marshal(requestBody)
+
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/v3/resource"),
+					ghttp.VerifyBody(body),
+					ghttp.RespondWith(http.StatusOK, []byte(`{"data":{"PropertyA":"A","PropertyB":10}}`)),
+				),
+			)
+
+			var aDataModel struct {
+				PropertyA string
+				PropertyB int
+			}
+			err := habitapi.Put("/resource", requestBody, &aDataModel)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(aDataModel.PropertyA).To(Equal("A"))
+			Expect(aDataModel.PropertyB).To(Equal(10))
+		})
+	})
+
 	Describe("when doing a DELETE", func() {
 		It("will parase request object and return the parse response object", func() {
 			server.AppendHandlers(

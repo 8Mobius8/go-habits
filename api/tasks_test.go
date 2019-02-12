@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/8Mobius8/go-habits/api"
 	. "github.com/8Mobius8/go-habits/api"
@@ -390,6 +391,29 @@ var _ = Describe("Tasks", func() {
 				goHabitsError := err.(*GoHabitsError)
 				Expect(goHabitsError.StatusCode).Should(Equal(401))
 				Expect(goHabitsError.Error()).Should(Equal(message))
+			})
+		})
+	})
+
+	Describe("SetDueDate", func() {
+		Context("given a task has already been created", func() {
+			var task api.Task
+			var date time.Time
+			var dateExample = "2019-02-15T00:54:00.000Z"
+			It("will succesfully update tasks due dates via API", func() {
+				task = api.Task{ID: "id"}
+				date = time.Now()
+
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/v3/tasks/"+task.ID),
+						ghttp.VerifyBody([]byte(`{"date":"`+date.Format(dateExample)+`"}`)),
+						ghttp.RespondWith(http.StatusOK, ValidTask),
+					),
+				)
+
+				err := habitapi.SetDueDate(task, time.Now())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	})

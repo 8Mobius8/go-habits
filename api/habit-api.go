@@ -126,11 +126,26 @@ func parseHabitsServerError(hres habiticaResponse, res *http.Response) error {
 	return NewGoHabitsError(errMessage, res.StatusCode, res.Request.URL.EscapedPath())
 }
 
+func (api *HabiticaAPI) createRequest(method, route string, requestObject interface{}) (*http.Request, error) {
+	switch method {
+	case "GET", "DELETE":
+		return http.NewRequest(method, api.hostURL+"/v3"+route, nil)
+	case "POST", "PUT":
+		data, err := json.Marshal(requestObject)
+		if err != nil {
+			api.logger.Errorln(err)
+			return nil, err
+		}
+		return http.NewRequest(method, api.hostURL+"/v3"+route, bytes.NewBuffer(data))
+	}
+	return nil, NewGoHabitsError("Method '"+method+"' not supported", 1, route)
+}
+
 // Get will return response from the passed in route of Habitica Api.
 // It will also return errors in either HTTP Protocol or if status
 // code is equal to or above 400.
 func (api *HabiticaAPI) Get(route string, responseType interface{}) error {
-	req, err := http.NewRequest("GET", api.hostURL+"/v3"+route, nil)
+	req, err := api.createRequest("GET", route, nil)
 	if err != nil {
 		api.logger.Errorln(err)
 		return err
@@ -142,16 +157,22 @@ func (api *HabiticaAPI) Get(route string, responseType interface{}) error {
 // Post will take in url, request data as a struct, and response as a struct and output errors for
 // marshalling either.
 func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObject interface{}) error {
-	data, merr := json.Marshal(requestObject)
-	if merr != nil {
-		api.logger.Errorln(merr)
-		return merr
+	req, err := api.createRequest("POST", url, requestObject)
+	if err != nil {
+		api.logger.Errorln(err)
+		return err
 	}
 
-	req, rerr := http.NewRequest("POST", api.hostURL+"/v3"+url, bytes.NewBuffer(data))
-	if rerr != nil {
-		api.logger.Errorln(rerr)
-		return rerr
+	return api.Do(req, responseObject)
+}
+
+// Put will take in url, request data as a struct and repsonse as a struct and output errors for
+// marshaling either
+func (api *HabiticaAPI) Put(url string, requestObject interface{}, responseObject interface{}) error {
+	req, err := api.createRequest("PUT", url, requestObject)
+	if err != nil {
+		api.logger.Errorln(err)
+		return err
 	}
 
 	return api.Do(req, responseObject)
@@ -159,6 +180,11 @@ func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObje
 
 // Delete will take an url, and response as a struct and output errors for marshalling either.
 func (api *HabiticaAPI) Delete(route string) error {
-	req, _ := http.NewRequest("DELETE", api.hostURL+"/v3"+route, nil)
+	req, err := api.createRequest("DELETE", route, nil)
+	if err != nil {
+		api.logger.Errorln(err)
+		return err
+	}
+
 	return api.Do(req, nil)
 }

@@ -1,5 +1,7 @@
 package api
 
+import "time"
+
 // Task is a Habitica task.
 type Task struct {
 	Order     int
@@ -153,4 +155,16 @@ func (api *HabiticaAPI) DeleteTask(t Task) error {
 		return NewGoHabitsError("Task id is empty", 1, "")
 	}
 	return api.Delete("/tasks/" + t.ID)
+}
+
+var dateExample = "2019-02-15T00:54:00.000Z"
+
+// SetDueDate sets the due date for a task using the given date as a time struct
+func (api *HabiticaAPI) SetDueDate(t Task, date time.Time) error {
+	taskUpdate := struct {
+		Date string `json:"date"`
+	}{
+		date.Format(dateExample),
+	}
+	return api.Put("/tasks/"+t.ID, taskUpdate, t)
 }
