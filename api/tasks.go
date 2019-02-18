@@ -10,6 +10,8 @@ type Task struct {
 	ID        string   `json:"id"`
 	Type      string   `json:"type"`
 	Completed bool     `json:"completed"`
+	date      string   `json:"date"`
+	DueDate   time.Time
 }
 
 // NewTask creates a new task of a particular Task type.
@@ -161,6 +163,7 @@ var dateExample = "2019-02-15T00:54:00.000Z"
 
 // SetDueDate sets the due date for a task using the given date as a time struct
 func (api *HabiticaAPI) SetDueDate(t Task, date time.Time) error {
+	t.DueDate = date
 	taskUpdate := struct {
 		Date string `json:"date"`
 	}{

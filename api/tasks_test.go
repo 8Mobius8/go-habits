@@ -163,6 +163,20 @@ const (
 				"updatedAt":"2017-01-11T14:25:32.504Z",
 				"id":"someId"
 		}}`
+	// Task with due date set to 2019-02-19 0:00:00.000
+	ValidTaskWithDate = `{"success":"true","notifications":[],
+		"data":{
+				"text":"Valid Todo Title",
+				"type":"todo",
+				"tags":["valid", "test"],
+				"value":10,
+				"priority":1,
+				"attribute":"str",
+				"date":"2019-02-19T00:00:00.000Z",
+				"createdAt":"2017-01-07T17:52:09.121Z",
+				"updatedAt":"2017-01-11T14:25:32.504Z",
+				"id":"chore-id-1"
+		}}`
 )
 
 var _ = Describe("Tasks", func() {
@@ -414,6 +428,24 @@ var _ = Describe("Tasks", func() {
 
 				err := habitapi.SetDueDate(task, time.Now())
 				Expect(err).ToNot(HaveOccurred())
+			})
+			It("will return a task that has the due date set", func() {
+				task = api.Task{ID: "id"}
+				date = time.Now()
+
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/v3/tasks/"+task.ID),
+						ghttp.VerifyBody([]byte(`{"date":"`+date.Format(dateExample)+`"}`)),
+						// Date with
+						ghttp.RespondWith(http.StatusOK, ValidTaskWithDate),
+					),
+				)
+
+				err := habitapi.SetDueDate(task, time.Now())
+				Expect(err).ToNot(HaveOccurred())
+				//2019-02-19 0:00:00.000
+				Expect(task.DueDate).To(BeEquivalentTo(time.Date(2019, time.February, 19, 0, 0, 0, 0, time.UTC)))
 			})
 		})
 	})

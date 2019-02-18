@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strings"
+	"time"
 
 	api "github.com/8Mobius8/go-habits/api"
 )
@@ -19,12 +20,14 @@ var TaskLine = regexp.MustCompile("(?m)^\\[ \\] (.*)$")
 type AddTaskServer interface {
 	AddTask(api.Task) (api.Task, error)
 	GetTasks(api.TaskType) []api.Task
+	SetDueDate(t api.Task, date time.Time) error
 }
 
 // Add or `go-habits add` command allows habiters to add
 // new tasks to their list of todos. When running this command
 // the format expected is like follows:
 // go-habits a {{ TaskTitle }}
+// TODO allow `due:DATE` to be parse and set via api.SetDueDate(t)
 func Add(out io.Writer, server AddTaskServer, args []string, filePath string) error {
 	tasks, err := parseTask(args, filePath)
 	if err != nil {
