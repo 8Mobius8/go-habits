@@ -75,7 +75,7 @@ var _ = Describe("Habitica API Router", func() {
 			Expect(aDataModel.PropertyB).To(Equal(10))
 		})
 		It("and a dial error occurs returns gohabits error ", func() {
-			req, _ := http.NewRequest("GET", "http://notaccessibl.io/v3/resource", nil)
+			req, _ := http.NewRequest("GET", "http://notaccessible/v3/resource", nil)
 			var e struct{}
 			err := habitapi.Do(req, &e)
 			Expect(err).To(HaveOccurred())

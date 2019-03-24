@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strings"
-	"time"
 
 	api "github.com/8Mobius8/go-habits/api"
 )
@@ -20,7 +19,7 @@ var TaskLine = regexp.MustCompile("(?m)^\\[ \\] (.*)$")
 type AddTaskServer interface {
 	AddTask(api.Task) (api.Task, error)
 	GetTasks(api.TaskType) []api.Task
-	SetDueDate(t api.Task, date time.Time) error
+	//SetDueDate(t api.Task, date time.Time) (api.Task, error)
 }
 
 // Add or `go-habits add` command allows habiters to add

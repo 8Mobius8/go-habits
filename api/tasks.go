@@ -159,15 +159,19 @@ func (api *HabiticaAPI) DeleteTask(t Task) error {
 	return api.Delete("/tasks/" + t.ID)
 }
 
-var dateExample = "2019-02-15T00:54:00.000Z"
+var HabiticaDateExample = "2019-02-15T00:54:00.000Z"
 
 // SetDueDate sets the due date for a task using the given date as a time struct
-func (api *HabiticaAPI) SetDueDate(t Task, date time.Time) error {
+func (api *HabiticaAPI) SetDueDate(t Task, date time.Time) (Task, error) {
 	t.DueDate = date
 	taskUpdate := struct {
 		Date string `json:"date"`
 	}{
-		date.Format(dateExample),
+		date.Format(HabiticaDateExample),
 	}
-	return api.Put("/tasks/"+t.ID, taskUpdate, t)
+	err := api.Put("/tasks/"+t.ID, taskUpdate, t)
+	if err != nil {
+		return Task{}, err
+	}
+	return t, nil
 }

@@ -18,14 +18,8 @@ func TestIntegration(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	var exists bool
-	HabiticaAPIURI, exists = os.LookupEnv("SERVER")
-	Ω(exists).ShouldNot(BeFalse())
-	Ω(HabiticaAPIURI).ShouldNot(BeEmpty())
-
-	BuildVersion, exists = os.LookupEnv("BUILD_VERSION")
-	Ω(exists).ShouldNot(BeFalse())
-	Ω(BuildVersion).ShouldNot(BeEmpty())
+	HabiticaAPIURI = EnvironmentVariableShouldNotBeEmpty("SERVER")
+	BuildVersion = EnvironmentVariableShouldNotBeEmpty("BUILD_VERSION")
 
 	APIClient = api.NewHabiticaAPI(nil, HabiticaAPIURI, log.NewNullLogger("test"))
 	RegisterUser(HabiticaAPIURI, UserName, Password, Email)
@@ -35,3 +29,10 @@ var _ = BeforeSuite(func() {
 var _ = AfterSuite(func() {
 	DeleteUser(HabiticaAPIURI, UserName, Password, "go-habits integration test")
 })
+
+func EnvironmentVariableShouldNotBeEmpty(envVariable string) string {
+	contents, exists := os.LookupEnv(envVariable)
+	Ω(exists).ShouldNot(BeFalse(), "%s environment variable should exist", envVariable)
+	Ω(contents).ShouldNot(BeEmpty(), "%s environment variable should not be empty", envVariable)
+	return contents
+}
