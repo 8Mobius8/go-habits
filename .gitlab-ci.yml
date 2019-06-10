@@ -34,8 +34,9 @@ integration-tests:
   before_script:
     - docker info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - apk add --no-cache make py-pip
-    - pip install docker-compose
+    - sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    - sudo chmod +x /usr/local/bin/docker-compose
+    - docker-compose --version
   stage: test
   script:
     - docker-compose run -w "/go/src/github.com/8Mobius8/go-habits" integration
