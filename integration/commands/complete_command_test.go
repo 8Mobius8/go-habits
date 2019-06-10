@@ -49,6 +49,14 @@ var _ = Describe("go-habits complete command", func() {
 
 				Expect(t.Completed).Should(Equal(true))
 			})
+			It("will print rewards for completing", func() {
+				s := GoHabits("complete", "1")
+				Eventually(s).Should(gexec.Exit(0))
+
+				Eventually(s).Should(gbytes.Say("MP"))
+				Eventually(s).Should(gbytes.Say("GP"))
+				Eventually(s).Should(gbytes.Say("XP"))
+			})
 		})
 		Context("given no task has been created", func() {
 			It("will print no tasks have been created.", func() {

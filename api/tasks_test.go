@@ -291,17 +291,33 @@ var _ = Describe("Tasks", func() {
 					)
 				})
 				It("will call the server with correct uri", func() {
-					err := habitapi.ScoreTaskUp(task)
+					_, err := habitapi.ScoreTaskUp(task)
 					Expect(err).ShouldNot(HaveOccurred())
 				})
 				It("the next get on task will return with completed true", func() {
-					err := habitapi.ScoreTaskUp(task)
+					_, err := habitapi.ScoreTaskUp(task)
 					Expect(err).ShouldNot(HaveOccurred())
 
 					err = habitapi.Get("/tasks/"+task.ID, &task)
 					Expect(err).ShouldNot(HaveOccurred())
 
 					Expect(task.Completed).Should(Equal(true))
+				})
+				It("the next get on task will return with completed true", func() {
+					_, err := habitapi.ScoreTaskUp(task)
+					Expect(err).ShouldNot(HaveOccurred())
+
+					err = habitapi.Get("/tasks/"+task.ID, &task)
+					Expect(err).ShouldNot(HaveOccurred())
+
+					Expect(task.Completed).Should(Equal(true))
+				})
+				It("will return the delta/rewards for completing the task", func() {
+					delta, _ := habitapi.ScoreTaskUp(task)
+
+					Expect(delta.MP).ShouldNot(BeNumerically("==", 0))
+					Expect(delta.GP).ShouldNot(BeNumerically("==", 0))
+					Expect(delta.EXP).ShouldNot(BeNumerically("==", 0))
 				})
 			})
 			Context("and id does not exist on server", func() {
@@ -317,7 +333,7 @@ var _ = Describe("Tasks", func() {
 						),
 					)
 
-					err := habitapi.ScoreTaskUp(task)
+					_, err := habitapi.ScoreTaskUp(task)
 					Expect(err).Should(HaveOccurred())
 					goHabitsError := err.(*GoHabitsError)
 					Expect(goHabitsError.Path).Should(Equal("/v3/tasks/" + task.ID + "/score/up"))
@@ -330,7 +346,7 @@ var _ = Describe("Tasks", func() {
 		Context("given a task without an id", func() {
 			It("will return with error saying no id was given", func() {
 				task := Task{}
-				err := habitapi.ScoreTaskUp(task)
+				_, err := habitapi.ScoreTaskUp(task)
 				Expect(err).Should(HaveOccurred())
 				goHabitsError := err.(*GoHabitsError)
 				Expect(goHabitsError.Error()).Should(ContainSubstring("Task id is empty"))

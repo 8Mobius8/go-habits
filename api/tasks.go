@@ -139,15 +139,21 @@ func (api *HabiticaAPI) addTask(t Task) (Task, error) {
 	return t, err
 }
 
+type ScoreUpDelta struct {
+	MP  float32 `json:"mp"`
+	EXP float32 `json:"exp"`
+	GP  float32 `json:"gp"`
+}
+
 // ScoreTaskUp calls api to score a task up. Equvilant to marking the task as
 // completed. This results in a experience, gold, and other reward gain.
-func (api *HabiticaAPI) ScoreTaskUp(t Task) error {
-	empty := struct{}{}
+func (api *HabiticaAPI) ScoreTaskUp(t Task) (ScoreUpDelta, error) {
+	resp := ScoreUpDelta{}
 	if t.ID == "" {
-		return NewGoHabitsError("Task id is empty", 1, "")
+		return resp, NewGoHabitsError("Task id is empty", 1, "")
 	}
-	err := api.Post("/tasks/"+t.ID+"/score/up", empty, empty)
-	return err
+	err := api.Post("/tasks/"+t.ID+"/score/up", struct{}{}, resp)
+	return resp, err
 }
 
 // DeleteTask removes a task from the habits server. Does not complete, cause

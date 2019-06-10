@@ -22,12 +22,20 @@ services:
   habitica:
     image: registry.gitlab.com/8mobius8/go-habits/api
     ports:
-      - "3000:3000"
+      - 3000:3000
     environment:
       NODE_DB_URI: mongodb://mongo/habitrpg
     links:
       - mongo:mongo
     privileged: true
+
+  habitica-web:
+    image: registry.gitlab.com/8mobius8/go-habits/api
+    command: npm run client:dev
+    ports:
+      - 8080:8080
+    links:
+      - habitica:localhost
 
   mongo:
     image: mongo:3.4
