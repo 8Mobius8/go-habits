@@ -29,10 +29,13 @@ unit-tests:
     - make test-unit
 
 integration-tests:
+  image: docker
   stage: build
   before_script:
     - docker info
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - apk add --no-cache make py-pip
+    - pip install docker-compose
     - docker-compose --version
   stage: test
   script:
