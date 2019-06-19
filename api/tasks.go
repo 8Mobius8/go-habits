@@ -165,6 +165,8 @@ func (api *HabiticaAPI) DeleteTask(t Task) error {
 	return api.Delete("/tasks/" + t.ID)
 }
 
+// HabiticaDateExample is to be used date.Format to be able to format dates to and from
+// Habitica API timestamps and golang native times.
 var HabiticaDateExample = "2019-02-15T00:54:00.000Z"
 
 // SetDueDate sets the due date for a task using the given date as a time struct

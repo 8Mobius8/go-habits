@@ -17,7 +17,7 @@ type DeleteServer interface {
 }
 
 // Remove will remove tasks by order as given in arguments from a `DeleteServer`
-func Remove(in io.Reader, out io.Writer, args []string, server DeleteServer, force bool) error {
+func Remove(in io.Reader, out io.Writer, args []string, server DeleteServer) error {
 	pArg, err := strconv.Atoi(args[0])
 	if err != nil {
 		return err
@@ -27,11 +27,8 @@ func Remove(in io.Reader, out io.Writer, args []string, server DeleteServer, for
 		return err
 	}
 
-	deleteTask := force
-	if !force {
-		taskYorN := fmt.Sprint(formatTask(t), `[Y\n]?`)
-		deleteTask = decideYesOrNo(in, out, taskYorN)
-	}
+	taskYorN := fmt.Sprint(formatTask(t), `[Y\n]?`)
+	deleteTask := decideYesOrNo(in, out, taskYorN)
 
 	if deleteTask {
 		err = server.DeleteTask(t)
@@ -41,6 +38,27 @@ func Remove(in io.Reader, out io.Writer, args []string, server DeleteServer, for
 		fmt.Fprintln(out, "Removed tasks:")
 		fmt.Fprintln(out, fmt.Sprintf("%d%s %s ", t.Order, "X", t.Title))
 	}
+
+	return nil
+}
+
+// RemoveForced will remove tasks without asking by order as given in arguments from a `DeleteServer`
+func RemoveForced(in io.Reader, out io.Writer, args []string, server DeleteServer) error {
+	pArg, err := strconv.Atoi(args[0])
+	if err != nil {
+		return err
+	}
+	t, err := GetTaskAtPosition(server, pArg-1)
+	if err != nil {
+		return err
+	}
+
+	err = server.DeleteTask(t)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(out, "Removed tasks:")
+	fmt.Fprintln(out, fmt.Sprintf("%d%s %s ", t.Order, "X", t.Title))
 
 	return nil
 }
