@@ -139,6 +139,9 @@ func (api *HabiticaAPI) addTask(t Task) (Task, error) {
 	return t, err
 }
 
+// ScoreUpDelta contains the positive difference when a task is scored up.
+// This will probably change to ScoreDelta or Delta when we are able to
+// Score a task down.
 type ScoreUpDelta struct {
 	Mp  float64 `json:"mp"`
 	Exp float64 `json:"exp"`
