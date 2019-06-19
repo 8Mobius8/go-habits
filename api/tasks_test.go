@@ -163,6 +163,40 @@ const (
 				"updatedAt":"2017-01-11T14:25:32.504Z",
 				"id":"someId"
 		}}`
+	ScoreUpTask = `{"success":"true","notifications":[],
+	  "data":{
+			"delta": 0.9746999906450404,
+			"hp": 49.06645205596985,
+			"mp": 37.2008917491047,
+			"exp": 101.93810026267543,
+			"gp": 77.09694176716997,
+			"lvl": 19,
+			"class": "rogue",
+			"points": 0,
+			"str": 5,
+			"con": 3,
+			"int": 3,
+			"per": 8,
+			"buffs": {
+					"str": 9,
+					"int": 9,
+					"per": 9,
+					"con": 9,
+					"stealth": 0,
+					"streaks": false,
+					"snowball": false,
+					"spookySparkles": false,
+					"shinySeed": false,
+					"seafoam": false
+			},
+			"training": {
+					"int": 0,
+					"per": 0,
+					"str": 0,
+					"con": 0
+			}
+		}}`
+
 	// Task with due date set to 2019-02-19 0:00:00.000
 	ValidTaskWithDate = `{"success":"true","notifications":[],
 		"data":{
@@ -283,6 +317,7 @@ var _ = Describe("Tasks", func() {
 					server.AppendHandlers(
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("POST", "/v3/tasks/"+task.ID+"/score/up"),
+							ghttp.RespondWith(200, ScoreUpTask),
 						),
 						ghttp.CombineHandlers(
 							ghttp.VerifyRequest("GET", "/v3/tasks/"+task.ID),
@@ -315,9 +350,9 @@ var _ = Describe("Tasks", func() {
 				It("will return the delta/rewards for completing the task", func() {
 					delta, _ := habitapi.ScoreTaskUp(task)
 
-					Expect(delta.MP).ShouldNot(BeNumerically("==", 0))
-					Expect(delta.GP).ShouldNot(BeNumerically("==", 0))
-					Expect(delta.EXP).ShouldNot(BeNumerically("==", 0))
+					Expect(delta.Mp).Should(BeNumerically("==", 37.2008917491047))
+					Expect(delta.Gp).Should(BeNumerically("==", 77.09694176716997))
+					Expect(delta.Exp).Should(BeNumerically("==", 101.93810026267543))
 				})
 			})
 			Context("and id does not exist on server", func() {

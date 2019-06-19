@@ -13,7 +13,7 @@ import (
 type TasksServer interface {
 	GetTasks(api.TaskType) []api.Task
 	AddTask(api.Task) (api.Task, error)
-	ScoreTaskUp(api.Task) error
+	ScoreTaskUp(api.Task) (api.ScoreUpDelta, error)
 }
 
 // Complete or `go-habits complete` allows habiters to complete
@@ -33,12 +33,13 @@ func Complete(out io.Writer, ts TasksServer, args []string) error {
 		return api.NewGoHabitsError(err.Error(), 1, "")
 	}
 
-	err = ts.ScoreTaskUp(t)
+	delta, err := ts.ScoreTaskUp(t)
 	if err != nil {
 		return err
 	}
 	t.Completed = true
 	fmt.Fprintln(out, formatTask(t))
+	fmt.Fprintf(out, "MP: %f GP: %f XP: %f\n", delta.Mp, delta.Gp, delta.Exp)
 	return nil
 }
 

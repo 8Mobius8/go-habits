@@ -94,7 +94,7 @@ type MockDeleteServer struct {
 	DeleteTaskFunc  func(api.Task) error
 	GetTasksFunc    func(api.TaskType) []api.Task
 	AddTaskFunc     func(api.Task) (api.Task, error)
-	ScoreTaskUpFunc func(api.Task) error
+	ScoreTaskUpFunc func(api.Task) (api.ScoreUpDelta, error)
 }
 
 func (s MockDeleteServer) DeleteTask(t api.Task) error {
@@ -106,6 +106,6 @@ func (s MockDeleteServer) GetTasks(t api.TaskType) []api.Task {
 func (s MockDeleteServer) AddTask(t api.Task) (api.Task, error) {
 	return s.AddTaskFunc(t)
 }
-func (s MockDeleteServer) ScoreTaskUp(t api.Task) error {
+func (s MockDeleteServer) ScoreTaskUp(t api.Task) (api.ScoreUpDelta, error) {
 	return s.ScoreTaskUpFunc(t)
 }
