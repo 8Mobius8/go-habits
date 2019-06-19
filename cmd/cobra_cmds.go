@@ -49,7 +49,10 @@ var removeCmd = &cobra.Command{
 You will not recieve and awards for removing tasks.`,
 	Aliases: []string{"remove todo", "rm t", "rm"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return commands.Remove(os.Stdin, cmd.OutOrStdout(), args, habitsServer, forceRemove)
+		if forceRemove {
+			return commands.RemoveForced(os.Stdin, cmd.OutOrStdout(), args, habitsServer)
+		}
+		return commands.Remove(os.Stdin, cmd.OutOrStdout(), args, habitsServer)
 	},
 }
 

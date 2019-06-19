@@ -34,7 +34,7 @@ var _ = Describe("Remove cmd", func() {
 					},
 				}
 
-				err := cmd.Remove(in, out, []string{"1"}, server, true)
+				err := cmd.RemoveForced(in, out, []string{"1"}, server)
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(out).Should(gbytes.Say("Removed tasks"))
 				Eventually(out).Should(gbytes.Say(aTask.Title))
@@ -56,7 +56,7 @@ var _ = Describe("Remove cmd", func() {
 				}
 
 				in.Write([]byte("Y\n"))
-				cmd.Remove(in, out, []string{"1"}, server, false)
+				cmd.Remove(in, out, []string{"1"}, server)
 				Expect(out).Should(gbytes.Say(`Remove\?`))
 				Expect(out).Should(gbytes.Say(aTask.Title))
 				Expect(out).Should(gbytes.Say(`\[Y\\n\]\?`))
@@ -78,7 +78,7 @@ var _ = Describe("Remove cmd", func() {
 					},
 				}
 
-				err := cmd.Remove(in, out, []string{"1"}, server, false)
+				err := cmd.Remove(in, out, []string{"1"}, server)
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(out).Should(gbytes.Say("Remove?"))
 				Eventually(out).Should(gbytes.Say(aTask.Title))
