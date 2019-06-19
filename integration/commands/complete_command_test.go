@@ -53,9 +53,9 @@ var _ = Describe("go-habits complete command", func() {
 				s := GoHabits("complete", "1")
 				Eventually(s).Should(gexec.Exit(0))
 
-				Eventually(s).Should(gbytes.Say("MP"))
-				Eventually(s).Should(gbytes.Say("GP"))
-				Eventually(s).Should(gbytes.Say("XP"))
+				Eventually(s).Should(gbytes.Say("MP: [0-9]+\\.[0-9]+"))
+				Eventually(s).Should(gbytes.Say("GP: [0-9]+\\.[0-9]+"))
+				Eventually(s).Should(gbytes.Say("XP: [0-9]+\\.[0-9]+"))
 			})
 		})
 		Context("given no task has been created", func() {

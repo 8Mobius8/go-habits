@@ -99,12 +99,14 @@ func (api *HabiticaAPI) parseResponse(body []byte, res *http.Response, object in
 	}
 
 	if len(body) > 0 {
+		api.logger.Debugln("hres.Data", string(hres.Data))
 		err = json.Unmarshal(hres.Data, &object)
 		if err != nil {
 			api.logger.Debugln("Unmarshal data failed", string(body))
 			api.logger.Errorln(err)
 			return NewGoHabitsError("Unmarshal data failed", 1, res.Request.URL.EscapedPath())
 		}
+		api.logger.Debugln("Object", object)
 	}
 	return nil
 }
@@ -154,8 +156,8 @@ func (api *HabiticaAPI) Get(route string, responseType interface{}) error {
 	return api.Do(req, responseType)
 }
 
-// Post will take in url, request data as a struct, and response as a struct and output errors for
-// marshalling either.
+// Post will take in url, request data as a struct, and response as pointer to struct and output
+// errors for marshalling either.
 func (api *HabiticaAPI) Post(url string, requestObject interface{}, responseObject interface{}) error {
 	req, err := api.createRequest("POST", url, requestObject)
 	if err != nil {

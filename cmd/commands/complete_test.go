@@ -11,7 +11,7 @@ import (
 type MockCompleteTaskServer struct {
 	GetTasksFunc    func(api.TaskType) []api.Task
 	AddTaskFunc     func(api.Task) (api.Task, error)
-	ScoreTaskUpFunc func(api.Task) error
+	ScoreTaskUpFunc func(api.Task) (api.ScoreUpDelta, error)
 }
 
 func (ts MockCompleteTaskServer) GetTasks(tt api.TaskType) []api.Task {
@@ -20,7 +20,7 @@ func (ts MockCompleteTaskServer) GetTasks(tt api.TaskType) []api.Task {
 func (ts MockCompleteTaskServer) AddTask(t api.Task) (api.Task, error) {
 	return ts.AddTaskFunc(t)
 }
-func (ts MockCompleteTaskServer) ScoreTaskUp(t api.Task) error {
+func (ts MockCompleteTaskServer) ScoreTaskUp(t api.Task) (api.ScoreUpDelta, error) {
 	return ts.ScoreTaskUpFunc(t)
 }
 

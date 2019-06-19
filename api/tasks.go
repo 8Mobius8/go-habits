@@ -140,9 +140,9 @@ func (api *HabiticaAPI) addTask(t Task) (Task, error) {
 }
 
 type ScoreUpDelta struct {
-	MP  float32 `json:"mp"`
-	EXP float32 `json:"exp"`
-	GP  float32 `json:"gp"`
+	Mp  float64 `json:"mp"`
+	Exp float64 `json:"exp"`
+	Gp  float64 `json:"gp"`
 }
 
 // ScoreTaskUp calls api to score a task up. Equvilant to marking the task as
@@ -152,7 +152,7 @@ func (api *HabiticaAPI) ScoreTaskUp(t Task) (ScoreUpDelta, error) {
 	if t.ID == "" {
 		return resp, NewGoHabitsError("Task id is empty", 1, "")
 	}
-	err := api.Post("/tasks/"+t.ID+"/score/up", struct{}{}, resp)
+	err := api.Post("/tasks/"+t.ID+"/score/up", struct{}{}, &resp)
 	return resp, err
 }
 
