@@ -1,0 +1,12 @@
+name: Go Habits CI
+on: [push]
+
+jobs:
+  build:
+    name: Go Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v1
+      - name: Go test
+        run: make test-unit
