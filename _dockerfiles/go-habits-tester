@@ -1,4 +1,4 @@
-FROM golang:1.10 AS builder
+FROM golang:1.12 AS builder
 
 # Install Code Climate Reporter
 RUN curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > /usr/bin/cc-test-reporter \
@@ -8,12 +8,11 @@ RUN curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest
 RUN curl -L --fail https://github.com/docker/compose/releases/download/1.23.2/run.sh \
     -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
-  
-# Install dep for golang
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 # Install ginkgo command to run tests
 RUN go get github.com/onsi/ginkgo/ginkgo
 
 # Install golint tool
 RUN	go get -u golang.org/x/lint/golint
+
+WORKDIR /src

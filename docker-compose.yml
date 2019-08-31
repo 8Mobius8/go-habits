@@ -5,13 +5,13 @@ services:
     image: registry.gitlab.com/8mobius8/go-habits/tester
     command: ["make", "test-unit"]
     volumes:
-      - .:/go/src/github.com/8Mobius8/go-habits
+      - .:/src
 
   integration:
     image: registry.gitlab.com/8mobius8/go-habits/tester
     command: ["make", "test-integration"]
     volumes:
-      - .:/go/src/github.com/8Mobius8/go-habits
+      - .:/src
     environment:
       SERVER: http://habitica:3000/api
     links:
