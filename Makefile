@@ -12,10 +12,7 @@ all: dep go-build
 # Only `dep`
 .PHONY: dep dep-vendor-only
 dep:
-	dep ensure -v
-
-dep-vendor-only:
-	dep ensure -v -vendor-only
+	go mod vendor -v
 
 # Will build artifacts: executable, docker images.
 .PHONY: build go-build build-images

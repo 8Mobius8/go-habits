@@ -477,7 +477,7 @@ var _ = Describe("Tasks", func() {
 					),
 				)
 
-				_, err := habitapi.SetDueDate(task, time.Now())
+				_, err := habitapi.SetDueDate(task, date)
 				Expect(err).ToNot(HaveOccurred())
 			})
 			It("will return a task that has the due date set", func() {
