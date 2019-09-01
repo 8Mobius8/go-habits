@@ -42,7 +42,7 @@ integration-tests:
     - docker-compose --version
   stage: test
   script:
-    - docker-compose run -w "/go/src/github.com/8Mobius8/go-habits" integration
+    - docker-compose run integration
   services: 
     - docker:dind
     
