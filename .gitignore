@@ -1,10 +1,16 @@
 .vscode
 
+# Binary and test configuration file
 go-habits
 .go-habits.yml
 
+# Coverage files
 *coverprofile
 *.cov
 c.out
 
+# Dependancies. Use `go mod` to rebuild consistently
 vendor
+
+# Built releases
+release
