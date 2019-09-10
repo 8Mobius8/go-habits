@@ -18,7 +18,9 @@ jobs:
         run: make vendor
 
       - name: Build
-        run: make build
+        run: |
+          make dep
+          make build
 
   test:
     name: Test
@@ -35,5 +37,6 @@ jobs:
 
       - name: Test
         run: |
+          make dep
           docker-compose up -d habitica
           make test

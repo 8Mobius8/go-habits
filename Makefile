@@ -15,6 +15,10 @@ $(PLATFORMS):
 .PHONY: release
 release: lint windows linux darwin
 
+.PHONY: dep
+dep:
+	go get -v -u -d ./...
+
 # Install go depedancies using go mods
 .PHONY: vendor
 vendor:
@@ -45,7 +49,7 @@ ifdef api
 endif
 endif
 
-PKG_LIST  ?= $(shell go list ./... | grep -v /vendor/)
+PKG_LIST  ?= $(shell go list ./...)
 .PHONY: lint
 lint:
 	@golint ${PKG_LIST}
