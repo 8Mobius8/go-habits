@@ -17,6 +17,8 @@ release: lint windows linux darwin
 
 .PHONY: dep
 dep:
+	go get -u golang.org/x/lint/golint
+	go get -u github.com/onsi/ginkgo/ginkgo
 	go mod tidy -v
 
 # Install go depedancies using go mods
