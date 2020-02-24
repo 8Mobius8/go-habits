@@ -38,6 +38,7 @@ jobs:
 
       - name: Test
         run: |
+          export PATH=${PATH}:`go env GOPATH`/bin
           GO111MODULE=on make dep
           docker-compose up -d habitica
           make test
