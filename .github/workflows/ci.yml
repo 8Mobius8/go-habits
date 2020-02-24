@@ -19,6 +19,7 @@ jobs:
 
       - name: Build
         run: |
+          export PATH=${PATH}:`go env GOPATH`/bin
           GO111MODULE=on make dep
           make build
 
