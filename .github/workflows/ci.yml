@@ -15,11 +15,11 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Get dependencies
-        run: make vendor
+        run: GO111MODULE=on make vendor
 
       - name: Build
         run: |
-          make dep
+          GO111MODULE=on make dep
           make build
 
   test:
@@ -37,6 +37,6 @@ jobs:
 
       - name: Test
         run: |
-          make dep
+          GO111MODULE=on make dep
           docker-compose up -d habitica
           make test
