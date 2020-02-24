@@ -83,7 +83,7 @@ test-unit-randomly:
 	.
 
 SERVER          ?= http://localhost:3000/api
-INTEGRATION_ENV ?= VERSION=${VERSION} SERVER=${SERVER}
+INTEGRATION_ENV ?= BUILD_VERSION=${VERSION} SERVER=${SERVER}
 test-integration: install
 	${INTEGRATION_ENV} ./integration/wait-for-habitica-api.sh
 	${INTEGRATION_ENV} ginkgo -r --trace --progress ./integration
